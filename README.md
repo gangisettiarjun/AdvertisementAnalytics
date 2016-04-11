@@ -1,1 +1,1 @@
-This is Advertisement optimization Analytic Project
+This is Advertisement Optimization Analytics Project
