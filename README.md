@@ -1,2 +1,1 @@
-# Advertisement Analytics
-Masters Project
+This is Advertisement optimization Analytic Project
