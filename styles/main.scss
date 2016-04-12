@@ -10,6 +10,7 @@ Table of contents :
 To go directly to one of these categories simply search for the topic as it is
 displayed here
 
+0 - My CSS
 1 - General CSS
 2 - Typography
 3 - containers / Tables / Lists
@@ -101,6 +102,22 @@ $info-alt:#8170ca;
   opacity: $opacity;
   $opacity-ie: $opacity * 100;
   filter: alpha(opacity=$opacity-ie); //IE8
+}
+
+
+/************************************
+0 - My CSS
+*************************************/
+
+.click-thru-rate{
+ font-weight: bold;
+ font-size: 48px;
+ 
+ p{
+    font-size: 32px;
+    color : red;
+ }
+
 }
 
 /************************************
@@ -3797,7 +3814,7 @@ $badge-colors:(
 
 #nav a {
   font-size: 12px;
-  text-transform:lowercase;
+  text-transform:uppercase;
   font-weight:bold;
   color: $yellow;
   @include transition(all 0.2s ease-in-out);
@@ -4048,7 +4065,7 @@ $badge-colors:(
   height: 80px;
   padding-left: 20px;
   background-color: $orange;
-  color: #f2f2f2;
+  color: #ffffff;
   line-height: 80px;
   text-align: left;
 }
@@ -4079,15 +4096,15 @@ $badge-colors:(
   font-size: 15px;
   vertical-align: middle;
   color: #ffffff;
-  
+  text-transform: uppercase;
 }
 
 #nav-container .logo>a {
-  font-size: 80px;
+  font-size: 15px;
   font-weight:bold;
   vertical-align: middle;
   color: #ffffff;
-  
+  text-transform: uppercase;
 }
 
 @media (min-width: 768px) {
@@ -4834,8 +4851,8 @@ a.list-group-item-danger.active, a.list-group-item-danger.active:hover, a.list-g
   background-color: #ececec;
   border: none;
   font-size:12px;
-  text-transform:lowercase;
-  font-weight:normal;
+  text-transform:uppercase;
+  font-weight:bold;
 }
 
 .panel-default>.panel-heading+.panel-collapse>.panel-body {

@@ -1,28 +1,15 @@
-<header class="page-main-header">
+<header class="page-main-header" data-ng-controller="DashboardCtrl">
 
     <div class="row">
-        <div class="col-sm-6" style="font:bold;">
-            <h4 style="font-weight:bold;">
-                Dashboard
+        <div class="col-sm-12 text-center click-thru-rate">
+            <h4>
+                Click-Through Rate
             </h4>
             <p>
-                This page is the user dashboard showing all Ad information
+               {{ctr}}
             </p>
         </div>
-        <div class="col-sm-6">
-
-            <div class="pull-right">
-                <p>
-                    This is a small graph
-                </p>
-                <div data-ng-controller="sparklineCtrl">
-                    <span data-sparkline
-                    data-spark-data="simpleChartlong.sparkData"
-                    data-spark-options="simpleChartlong.sparkOptions"
-                    ></span>
-                </div>
-            </div>  
-        </div>
+        
     </div>
 
 </header>

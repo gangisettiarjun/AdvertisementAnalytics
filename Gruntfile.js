@@ -84,10 +84,22 @@ module.exports = function(grunt) {
             },
             add_banner: {
                 options: {
-                    banner: '/* My minified admin css file */'
+                    banner: '/* My fukcin minified admin css file */'
                 },
                 files: {
                     'dist/css/main.css': ['dist/css/main.css']
+                }
+            }
+        },
+
+        sass:{
+            options:{
+                sourceMap: true,
+                sourceComments: false
+            },
+            dist:{
+                files:{
+                   'styles/main.css': 'styles/main.scss' 
                 }
             }
         },
@@ -164,14 +176,14 @@ module.exports = function(grunt) {
         watch: {
             dev: {
                 files: [ 'Gruntfile.js', 'app/*.js', '*.html','styles/*.scss' ],
-                tasks: [ 'jshint','html2js:dist','copy:main', 'concat:dist', 'clean:temp','cssmin' ],
+                tasks: [ 'jshint','html2js:dist','copy:main', 'concat:dist', 'sass','clean:temp','cssmin' ],
                 options: {
                     atBegin: true
                 }
             },
             min: {
                 files: [ 'Gruntfile.js', 'app/*.js', '*.html','styles/*.scss' ],
-                tasks: [ 'jshint','html2js:dist','copy:main', 'concat:dist', 'clean:temp', 'uglify:dist','cssmin' ],
+                tasks: [ 'jshint','html2js:dist','copy:main', 'concat:dist', 'clean:temp', 'uglify:dist','sass','cssmin' ],
                 options: {
                     atBegin: true
                 }
@@ -211,8 +223,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-html2js');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-bower-task');
+    grunt.loadNpmTasks('grunt-sass');
 
-    grunt.registerTask('dev', [ 'bower', 'connect:server', 'watch:dev' ]);
+    grunt.registerTask('dev', [ 'bower', 'connect:server','watch:dev']);
     grunt.registerTask('test', [ 'bower', 'jshint' ]);
     grunt.registerTask('minified', [ 'bower', 'connect:server', 'watch:min' ]);
+    
 };

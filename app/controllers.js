@@ -27,9 +27,23 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
         }
-    ]).controller("DashboardCtrl", ["$scope",
-        function($scope) {
+    ]).controller("DashboardCtrl", ["$scope","$http",
+        function($scope,$http) {
+  
+           $http({
+              method: 'GET',
+              url: 'http://localhost:5353/getCTR',
+              cache: true
+            }).then(function successCallback(response) {
 
+              console.log('Success '+response.data);
+              $scope.ctr=response.data;
+
+            }, function errorCallback(data,status) {
+
+                console.log('Error! ' + status + ' : ' + data);                                  
+            
+            });     
 
         }
     ]);
