@@ -59,11 +59,25 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             console.log("Clicked ");
             $http.post('http://localhost:5353/predictData',data2).
                         then(function(response) {
-                                console.log(response.data);
+                                console.log("things"+response.data);
+                                console.log(window.location);
+                                window.location.href='/#/results';
                           },function(response){
-                           // window.location.href='/SignIn';
+                            
                           });
             };
+
+            
+
+
+        }
+    ]).controller("ResultsCtrl", ["$scope","$http",
+            
+
+            function($scope,$http){
+
+
+            console.log("welcome to results");
 
             
 

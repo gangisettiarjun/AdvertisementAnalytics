@@ -9190,6 +9190,8 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/predictor", {
                 templateUrl: "app/views/predictor.html"
+            }).when("/results", {
+                templateUrl: "app/views/results.html"
             }).when("/dashboard/dashboard", {
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/dashboard/dashboard2", {
@@ -9644,6 +9646,43 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                 console.log('Error! ' + status + ' : ' + data);                                  
             
             });     
+
+        }
+    ]).controller("PredictDataCtrl", ["$scope","$http",
+            
+
+            function($scope,$http){
+
+
+            $scope.sendPredictData = function(){
+
+            var data2={ "hi " : "fucker"};
+  
+            console.log("Clicked ");
+            $http.post('http://localhost:5353/predictData',data2).
+                        then(function(response) {
+                                console.log("things"+response.data);
+                                console.log(window.location);
+                                window.location.href='/#/results';
+                          },function(response){
+                            
+                          });
+            };
+
+            
+
+
+        }
+    ]).controller("ResultsCtrl", ["$scope","$http",
+            
+
+            function($scope,$http){
+
+
+            console.log("welcome to results");
+
+            
+
 
         }
     ]);

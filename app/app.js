@@ -23,6 +23,8 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/predictor", {
                 templateUrl: "app/views/predictor.html"
+            }).when("/results", {
+                templateUrl: "app/views/results.html"
             }).when("/dashboard/dashboard", {
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/dashboard/dashboard2", {
