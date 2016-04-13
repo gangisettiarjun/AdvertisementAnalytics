@@ -2,6 +2,8 @@
 var express = require('express');
 var app = express();
 var path = require('path');
+var bodyParser = require('body-parser');
+
 
 
 var port    =   process.env.PORT || 5353;
@@ -12,6 +14,9 @@ app.use(express.static(path.join(__dirname, '/')));
 
 // 	res.sendFile(path.join(__dirname + '/index.html'));
 // })
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
 
 app.use(function (req, res, next) {
 
@@ -36,6 +41,13 @@ app.get('/getCTR',function(req,res){
 
 console.log("requested CTR");
 res.send(200,"0.7");
+
+})
+
+app.post('/predictData',function(req,res){
+
+console.log("received",req.body);
+res.send(200,"Thanks");
 
 })
 

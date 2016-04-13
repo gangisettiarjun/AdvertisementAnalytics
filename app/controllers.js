@@ -46,6 +46,29 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             });     
 
         }
+    ]).controller("PredictDataCtrl", ["$scope","$http",
+            
+
+            function($scope,$http){
+
+
+            $scope.sendPredictData = function(){
+
+            var data2={ "hi " : "fucker"};
+  
+            console.log("Clicked ");
+            $http.post('http://localhost:5353/predictData',data2).
+                        then(function(response) {
+                                console.log(response.data);
+                          },function(response){
+                           // window.location.href='/SignIn';
+                          });
+            };
+
+            
+
+
+        }
     ]);
 
 
