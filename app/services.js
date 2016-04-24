@@ -30,4 +30,26 @@ angular.module("app.ui.services", []).factory("loggit", [
             }
         };
     }
+]).factory("getCTRService", ["$http","$rootScope",
+    function($http,$rootScope) {
+        return  {
+            getData: function() {
+                return $http.get('http://localhost:5353/getCTR').then(function(response){ //wrap it inside another promise using then
+                            return response.data;  //only return friends 
+                        });
+            }
+           
+        };
+    }
+]).factory("getImpVsClicks", ["$http",
+    function($http) {
+        return  {
+            getData: function() {
+                return $http.get('http://localhost:5353/getImpVsClicks').then(function(response){ //wrap it inside another promise using then
+                            return response.data;  //only return friends 
+                        });
+            }
+           
+        };
+    }
 ]);

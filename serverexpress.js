@@ -10,10 +10,6 @@ var port    =   process.env.PORT || 5353;
 
 app.use(express.static(path.join(__dirname, '/')));
 
-// app.get('/',function(req,res){
-
-// 	res.sendFile(path.join(__dirname + '/index.html'));
-// })
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -40,14 +36,31 @@ app.use(function (req, res, next) {
 app.get('/getCTR',function(req,res){
 
 console.log("requested CTR");
-res.send(200,"0.7");
+res.status(200).send("0.8");
 
 })
+
+
+app.get('/getImpVsClicks', function(req,res){
+
+  var data = [65, 59, 80, 81, 56, 55, 40 , 30 ,62 ,85 ,32 , 90];
+  console.log("received request advclicks");
+  res.status(200).json(data);
+})
+
 
 app.post('/predictData',function(req,res){
 
 console.log("received",req.body);
 res.send(200,"Thanks");
+
+});
+
+
+app.post('/signin',function(req,res){
+
+console.log("signdetails",req.body);
+res.send(200,"Go ahead");
 
 })
 

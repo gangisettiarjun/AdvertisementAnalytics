@@ -9629,24 +9629,13 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
         }
-    ]).controller("DashboardCtrl", ["$scope","$http",
-        function($scope,$http) {
+    ]).controller("DashboardCtrl", ["$scope","$http","getCTRService",
+        function($scope,$http,getCTRService) {
   
-           $http({
-              method: 'GET',
-              url: 'http://localhost:5353/getCTR',
-              cache: true
-            }).then(function successCallback(response) {
+           getCTRService.getData().then(function(response){
+                $scope.ctr=response;
 
-              console.log('Success '+response.data);
-              $scope.ctr=response.data;
-
-            }, function errorCallback(data,status) {
-
-                console.log('Error! ' + status + ' : ' + data);                                  
-            
-            });     
-
+           });
         }
     ]).controller("PredictDataCtrl", ["$scope","$http",
             
@@ -9685,6 +9674,29 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
 
         }
+    ]) . controller("SigninCtrl",["$scope","$http",
+
+
+          function($scope,$http){
+            /*Make a call to Signin REST API */
+
+            $scope.signInUser = function(){
+
+            var data2={ "hi " : "fucker"};
+  
+            console.log("Clicked ");
+            $http.post('http://localhost:5353/signin',data2).
+                        then(function(response) {
+                                console.log("loggedin"+response.data);
+                                
+                                //window.location.href='/#/dashboard/dashboard';
+                          },function(response){
+                            
+                          });
+            };
+
+          }
+
     ]);
 
 
@@ -9972,34 +9984,21 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                 value: 19
             }];
         }
-    ]).controller("chartjsCtrl", ["$scope",
-        function($scope) {
-            return $scope.chartjsLine = {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [
-                    {
-                        label: "My First dataset",
-                        fillColor: "rgba(56, 61, 67, 0.5)",
-                        strokeColor: "rgba(56, 61, 67, 0.5)",
-                        pointColor: "#fff",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "rgba(56, 61, 67, 0.5)",
-                        pointHighlightStroke: "rgba(220,220,220,1)",
-                        data: [65, 59, 80, 81, 56, 55, 40]
-                    },
-                    {
-                        label: "My Second dataset",
-                        fillColor: "rgba(219, 80, 49, 0.8)",
-                        strokeColor: "rgba(219, 80, 49, 0.8)",
-                        pointColor: "#fff",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "rgba(219, 80, 49, 0.8)",
-                        pointHighlightStroke: "rgba(151,187,205,1)",
-                        data: [28, 48, 40, 19, 86, 27, 90]
-                    }
-                ]
-            },$scope.chartjsBar = {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
+    ]).controller("chartjsCtrl", ['$scope',"getImpVsClicks",
+        function($scope,getImpVsClicks) {
+
+            $scope.impressionsData=[];
+
+            getImpVsClicks.getData().then(function(response){
+
+                
+                $scope.impressionsData=response;
+                console.log($scope.impressionsData);
+
+
+                $scope.chartjsBar = {
+
+                labels: ["January", "February", "March", "April", "May", "June", "July","Aug","Sep","Oct","Nov","Dec"],
                 datasets: [
                     {
                         label: "My First dataset",
@@ -10007,7 +10006,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(56, 61, 67, 0.5)",
                         highlightFill: "rgba(56, 61, 67, 0.8)",
                         highlightStroke: "rgba(56, 61, 67, 0.8)",
-                        data: [65, 59, 80, 81, 56, 55, 40]
+                        data: $scope.impressionsData
                     },
                     {
                         label: "My Second dataset",
@@ -10015,97 +10014,45 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(219, 80, 49, 0.8)",
                         highlightFill: "rgba(219, 80, 49, 0.9)",
                         highlightStroke: "rgba(219, 80, 49, 0.9)",
-                        data: [28, 48, 40, 19, 86, 27, 90]
+                        data: $scope.impressionsData
                     }
                 ]
-            },$scope.chartjsRadar = {
-                labels: ["Eating", "Drinking", "Sleeping", "Designing", "Coding", "Cycling", "Running"],
-                datasets: [
-                    {
-                        label: "My First dataset",
-                        fillColor: "rgba(56, 61, 67, 0.8)",
-                        strokeColor: "rgba(56, 61, 67, 1)",
-                        pointColor: "rgba(56, 61, 67, 1)",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "#fff",
-                        pointHighlightStroke: "rgba(56, 61, 67, 1)",
-                        data: [65, 59, 90, 81, 56, 55, 40]
-                    },
-                    {
-                        label: "My Second dataset",
-                        fillColor: "rgba(219, 80, 49, 0.8)",
-                        strokeColor: "rgba(219, 80, 49, 1)",
-                        pointColor: "rgba(219, 80, 49, 0.8)",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "#fff",
-                        pointHighlightStroke: "rgba(219, 80, 49, 0.8)",
-                        data: [28, 48, 40, 19, 96, 27, 100]
-                    }
-                ]
-            },$scope.chartjsPolarArea = [{
-                value: 300,
-                color:"#383d43",
-                highlight: "#383d43",
-                label: "Blue"
-            },
-                {
-                    value: 50,
-                    color: "#db5031",
-                    highlight: "#db5031",
-                    label: "Orange"
-                },
-                {
-                    value: 100,
-                    color: "#fef9d9",
-                    highlight: "#fef9d9",
-                    label: "Yellow"
-                },
-                {
-                    value: 40,
-                    color: "#c1bfc0",
-                    highlight: "#c1bfc0",
-                    label: "Grey"
-                },
-                {
-                    value: 120,
-                    color: "#503f3c",
-                    highlight: "#503f3c",
-                    label: "Dark Brown"
-                }],$scope.chartjsPie = [{
-                value: 300,
-                color:"#383d43",
-                highlight: "#383d43",
-                label: "Blue"
-            },
-                {
-                    value: 50,
-                    color: "#db5031",
-                    highlight: "#db5031",
-                    label: "Orange"
-                },
-                {
-                    value: 100,
-                    color: "#c1bfc0",
-                    highlight: "#c1bfc0",
-                    label: "Gray"
-                }],$scope.chartjsDoughnut = [{
-                value: 300,
-                color:"#383d43",
-                highlight: "#383d43",
-                label: "Blue"
-            },
-                {
-                    value: 50,
-                    color: "#db5031",
-                    highlight: "#db5031",
-                    label: "Orange"
-                },
-                {
-                    value: 100,
-                    color: "#c1bfc0",
-                    highlight: "#c1bfc0",
-                    label: "Gray"
-                }];
+                };
+
+                console.log($scope.chartjsBar);
+
+            });
+
+            
+            // return $scope.chartjsLine = {
+            //     labels: ["January", "February", "March", "April", "May", "June", "July"],
+            //     datasets: [
+            //         {
+            //             label: "My First dataset",
+            //             fillColor: "rgba(56, 61, 67, 0.5)",
+            //             strokeColor: "rgba(56, 61, 67, 0.5)",
+            //             pointColor: "#fff",
+            //             pointStrokeColor: "#fff",
+            //             pointHighlightFill: "rgba(56, 61, 67, 0.5)",
+            //             pointHighlightStroke: "rgba(220,220,220,1)",
+            //             data: [65, 59, 80, 81, 56, 55, 40]
+            //         },
+            //         {
+            //             label: "My Second dataset",
+            //             fillColor: "rgba(219, 80, 49, 0.8)",
+            //             strokeColor: "rgba(219, 80, 49, 0.8)",
+            //             pointColor: "#fff",
+            //             pointStrokeColor: "#fff",
+            //             pointHighlightFill: "rgba(219, 80, 49, 0.8)",
+            //             pointHighlightStroke: "rgba(151,187,205,1)",
+            //             data: [28, 48, 40, 19, 86, 27, 90]
+            //         }
+            //     ]
+            // },
+
+            
+
+
         }
     ]).controller("flotChartCtrl", ["$scope",
         function($scope) {
@@ -10524,6 +10471,10 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
             };
         }
     ]);
+           
+
+
+    
 
 
 
@@ -11730,6 +11681,28 @@ angular.module("app.ui.services", []).factory("loggit", [
             logError: function(message) {
                 logIt(message, "error");
             }
+        };
+    }
+]).factory("getCTRService", ["$http","$rootScope",
+    function($http,$rootScope) {
+        return  {
+            getData: function() {
+                return $http.get('http://localhost:5353/getCTR').then(function(response){ //wrap it inside another promise using then
+                            return response.data;  //only return friends 
+                        });
+            }
+           
+        };
+    }
+]).factory("getImpVsClicks", ["$http",
+    function($http) {
+        return  {
+            getData: function() {
+                return $http.get('http://localhost:5353/getImpVsClicks').then(function(response){ //wrap it inside another promise using then
+                            return response.data;  //only return friends 
+                        });
+            }
+           
         };
     }
 ]);
