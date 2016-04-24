@@ -9193,7 +9193,13 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
             }).when("/results", {
                 templateUrl: "app/views/results.html"
             }).when("/dashboard/dashboard", {
-                templateUrl: "app/views/dashboards/dashboard.html"
+                templateUrl: "app/views/dashboards/dashboard.html",
+                resolve:{
+                    'getImpVsClicksData' : function(getImpVsClicks){
+
+                        return getImpVsClicks.promise;
+                    }
+                }
             }).when("/dashboard/dashboard2", {
                 templateUrl: "app/views/dashboards/dashboard2.html"
             }).when("/dashboard/dashboard3", {
@@ -9989,14 +9995,9 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
 
             $scope.impressionsData=[];
 
-            getImpVsClicks.getData().then(function(response){
+            $scope.impressionsData=getImpVsClicks.getData();
 
-                
-                $scope.impressionsData=response;
-                console.log($scope.impressionsData);
-
-
-                $scope.chartjsBar = {
+            $scope.chartjsBar = {
 
                 labels: ["January", "February", "March", "April", "May", "June", "July","Aug","Sep","Oct","Nov","Dec"],
                 datasets: [
@@ -10019,40 +10020,8 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                 ]
                 };
 
-                console.log($scope.chartjsBar);
-
-            });
-
-            
-            // return $scope.chartjsLine = {
-            //     labels: ["January", "February", "March", "April", "May", "June", "July"],
-            //     datasets: [
-            //         {
-            //             label: "My First dataset",
-            //             fillColor: "rgba(56, 61, 67, 0.5)",
-            //             strokeColor: "rgba(56, 61, 67, 0.5)",
-            //             pointColor: "#fff",
-            //             pointStrokeColor: "#fff",
-            //             pointHighlightFill: "rgba(56, 61, 67, 0.5)",
-            //             pointHighlightStroke: "rgba(220,220,220,1)",
-            //             data: [65, 59, 80, 81, 56, 55, 40]
-            //         },
-            //         {
-            //             label: "My Second dataset",
-            //             fillColor: "rgba(219, 80, 49, 0.8)",
-            //             strokeColor: "rgba(219, 80, 49, 0.8)",
-            //             pointColor: "#fff",
-            //             pointStrokeColor: "#fff",
-            //             pointHighlightFill: "rgba(219, 80, 49, 0.8)",
-            //             pointHighlightStroke: "rgba(151,187,205,1)",
-            //             data: [28, 48, 40, 19, 86, 27, 90]
-            //         }
-            //     ]
-            // },
-
-            
-
-
+            console.log($scope.chartjsBar);
+            return $scope.chartjsBar;
         }
     ]).controller("flotChartCtrl", ["$scope",
         function($scope) {
@@ -11694,13 +11663,19 @@ angular.module("app.ui.services", []).factory("loggit", [
            
         };
     }
-]).factory("getImpVsClicks", ["$http",
+]).service("getImpVsClicks", ["$http",
     function($http) {
+
+        var finalData=[];
+
+        var promise = $http.get('http://localhost:5353/getImpVsClicks').success(function(data){
+
+                finalData=data;
+        });
         return  {
+            promise : promise,
             getData: function() {
-                return $http.get('http://localhost:5353/getImpVsClicks').then(function(response){ //wrap it inside another promise using then
-                            return response.data;  //only return friends 
-                        });
+                return finalData;
             }
            
         };

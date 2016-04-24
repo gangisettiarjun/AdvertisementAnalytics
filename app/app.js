@@ -26,7 +26,13 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
             }).when("/results", {
                 templateUrl: "app/views/results.html"
             }).when("/dashboard/dashboard", {
-                templateUrl: "app/views/dashboards/dashboard.html"
+                templateUrl: "app/views/dashboards/dashboard.html",
+                resolve:{
+                    'getImpVsClicksData' : function(getImpVsClicks){
+
+                        return getImpVsClicks.promise;
+                    }
+                }
             }).when("/dashboard/dashboard2", {
                 templateUrl: "app/views/dashboards/dashboard2.html"
             }).when("/dashboard/dashboard3", {

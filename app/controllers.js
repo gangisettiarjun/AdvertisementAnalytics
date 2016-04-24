@@ -387,14 +387,9 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
 
             $scope.impressionsData=[];
 
-            getImpVsClicks.getData().then(function(response){
+            $scope.impressionsData=getImpVsClicks.getData();
 
-                
-                $scope.impressionsData=response;
-                console.log($scope.impressionsData);
-
-
-                $scope.chartjsBar = {
+            $scope.chartjsBar = {
 
                 labels: ["January", "February", "March", "April", "May", "June", "July","Aug","Sep","Oct","Nov","Dec"],
                 datasets: [
@@ -417,40 +412,8 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                 ]
                 };
 
-                console.log($scope.chartjsBar);
-
-            });
-
-            
-            // return $scope.chartjsLine = {
-            //     labels: ["January", "February", "March", "April", "May", "June", "July"],
-            //     datasets: [
-            //         {
-            //             label: "My First dataset",
-            //             fillColor: "rgba(56, 61, 67, 0.5)",
-            //             strokeColor: "rgba(56, 61, 67, 0.5)",
-            //             pointColor: "#fff",
-            //             pointStrokeColor: "#fff",
-            //             pointHighlightFill: "rgba(56, 61, 67, 0.5)",
-            //             pointHighlightStroke: "rgba(220,220,220,1)",
-            //             data: [65, 59, 80, 81, 56, 55, 40]
-            //         },
-            //         {
-            //             label: "My Second dataset",
-            //             fillColor: "rgba(219, 80, 49, 0.8)",
-            //             strokeColor: "rgba(219, 80, 49, 0.8)",
-            //             pointColor: "#fff",
-            //             pointStrokeColor: "#fff",
-            //             pointHighlightFill: "rgba(219, 80, 49, 0.8)",
-            //             pointHighlightStroke: "rgba(151,187,205,1)",
-            //             data: [28, 48, 40, 19, 86, 27, 90]
-            //         }
-            //     ]
-            // },
-
-            
-
-
+            console.log($scope.chartjsBar);
+            return $scope.chartjsBar;
         }
     ]).controller("flotChartCtrl", ["$scope",
         function($scope) {

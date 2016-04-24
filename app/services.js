@@ -41,13 +41,19 @@ angular.module("app.ui.services", []).factory("loggit", [
            
         };
     }
-]).factory("getImpVsClicks", ["$http",
+]).service("getImpVsClicks", ["$http",
     function($http) {
+
+        var finalData=[];
+
+        var promise = $http.get('http://localhost:5353/getImpVsClicks').success(function(data){
+
+                finalData=data;
+        });
         return  {
+            promise : promise,
             getData: function() {
-                return $http.get('http://localhost:5353/getImpVsClicks').then(function(response){ //wrap it inside another promise using then
-                            return response.data;  //only return friends 
-                        });
+                return finalData;
             }
            
         };
