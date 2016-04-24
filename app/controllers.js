@@ -30,10 +30,8 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
     ]).controller("DashboardCtrl", ["$scope","$http","getCTRService",
         function($scope,$http,getCTRService) {
   
-           getCTRService.getData().then(function(response){
-                $scope.ctr=response;
+           $scope.ctr=getCTRService.getCTR();
 
-           });
         }
     ]).controller("PredictDataCtrl", ["$scope","$http",
             
@@ -94,6 +92,21 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
           }
+
+    ]).controller("popularAdCtrl",["$scope","getPopularAdsService",
+
+
+    function($scope, getPopularAdsService){
+
+        console.log(getPopularAdsService.getAd1());
+
+        $scope.advertisement1 = getPopularAdsService.getAd1();
+        $scope.advertisement2 = getPopularAdsService.getAd2();
+        $scope.advertisement3 = getPopularAdsService.getAd3();
+        $scope.advertisement4 = getPopularAdsService.getAd4();
+        $scope.advertisement5 = getPopularAdsService.getAd5();
+        $scope.advertisement6 = getPopularAdsService.getAd6();
+    }
 
     ]);
 
@@ -387,7 +400,8 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
 
             $scope.impressionsData=[];
 
-            $scope.impressionsData=getImpVsClicks.getData();
+            $scope.impressionsData1=getImpVsClicks.getData1();
+            $scope.impressionsData2=getImpVsClicks.getData2();
 
             $scope.chartjsBar = {
 
@@ -399,7 +413,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(56, 61, 67, 0.5)",
                         highlightFill: "rgba(56, 61, 67, 0.8)",
                         highlightStroke: "rgba(56, 61, 67, 0.8)",
-                        data: $scope.impressionsData
+                        data: $scope.impressionsData1
                     },
                     {
                         label: "My Second dataset",
@@ -407,7 +421,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(219, 80, 49, 0.8)",
                         highlightFill: "rgba(219, 80, 49, 0.9)",
                         highlightStroke: "rgba(219, 80, 49, 0.9)",
-                        data: $scope.impressionsData
+                        data: $scope.impressionsData2
                     }
                 ]
                 };
@@ -723,58 +737,15 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
         }
     ]).controller("flotChartCtrl.realtime", ["$scope",
         function() {}
-    ]).controller("sparklineCtrl", ["$scope",
-        function($scope) {
-            return $scope.demoData1 = {
-                sparkData: [3, 1, 2, 2, 4, 6, 4, 5, 2, 4, 5, 3, 4, 6, 4, 7],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#fff",
-                    highlightLineColor: "#fff",
-                    fillColor: "#383d43",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100%",
-                    height: "150px"
-                }
-            },$scope.simpleChart1 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#db5031",
-                    fillColor: "#c1bfc0",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100px",
-                    height: "50px"
-                }
-            }, $scope.simpleChart2 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#db5031",
-                    width: "100px",
-                    height: "50px"
-                }
-            },$scope.simpleChartlong = {
-                sparkData: [1, 3, 2, 5, 4, 2, 1, 7, 1, 8, 4, 3, 5, 2, 4, 5, 1, 7, 1, 8],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#c1bfc0",
-                    width: "250px",
-                    height: "30px"
-                }
-            },$scope.simpleChart2long = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2, 5, 4, 2, 6, 2, 4, 3, 1],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#383d43",
-                    width: "200px",
-                    height: "30px"
-                }
-            }, $scope.simpleChart2info = {
+    ]).controller("sparklineCtrl", ["$scope","getSearchAdCountService",
+        function($scope,getSearchAdCountService) {
+             
+           // $scope.simpleChart2info ={};
+
+           $scope.count = getSearchAdCountService.getCount();
+
+
+             $scope.simpleChart2info = {
                 sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
                 sparkOptions: {
                     type: "bar",
@@ -782,54 +753,9 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                     width: "100px",
                     height: "30px"
                 }
-            }, $scope.simpleChart3 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "pie",
-                    sliceColors: ["#383d43", "#db5031", "#c1bfc0", "#fef9d9", "#503f3c", "#365340"],
-                    width: "50px",
-                    height: "50px"
-                }
-            }, $scope.tristateChart1 = {
-                sparkData: [1, 2, -3, -5, 3, 1, -4, 2],
-                sparkOptions: {
-                    type: "tristate",
-                    posBarColor: "#383d43",
-                    negBarColor: "#c1bfc0",
-                    width: "100%",
-                    height: "50px"
-                }
-            }, $scope.largeChart1 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#db5031",
-                    highlightLineColor: "#7ACBEE",
-                    fillColor: "#c1bfc0",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100%",
-                    height: "150px"
-                }
-            }, $scope.largeChart2 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#383d43",
-                    barWidth: 10,
-                    width: "100%",
-                    height: "150px"
-                }
-            }, $scope.largeChart3 = {
-                sparkData: [3, 1, 2, 3, 5],
-                sparkOptions: {
-                    type: "pie",
-                    sliceColors: ["#383d43", "#db5031", "#c1bfc0", "#fef9d9", "#503f3c", "#365340"],
-                    width: "150px",
-                    height: "150px"
-                }
             };
+
+            return $scope.simpleChart2info;
         }
     ]);
            

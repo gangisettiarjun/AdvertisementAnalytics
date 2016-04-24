@@ -41,24 +41,24 @@
 
 
 <section>
-    <div class="row">
+    <div class="row" data-ng-controller="popularAdCtrl">
         <div class="col-md-12" style="left: 100px; width: 80%;">
             <!-- Labels -->
             <div class="panel panel-default">
                 <div class="panel-heading" style="text-align:center;"><i class="fa panel-ico"></i>Most popular Ad Keywords</div>
                 <div class="panel-body text-center popular-ads">
 
-                    <span class="label label-default">Advertisment 1</span>
+                    <span class="label label-default">{{advertisement1}}</span>
                     <div class="space"></div>
-                    <span class="label label-primary">Advertisment 2</span>
+                    <span class="label label-primary">{{advertisement2}}</span>
                     <div class="space"></div>
-                    <span class="label label-success">Advertisment 3</span>
+                    <span class="label label-success">{{advertisement3}}</span>
                     <div class="space"></div>
-                    <span class="label label-info">Advertisment 4</span>
+                    <span class="label label-info">{{advertisement4}}</span>
                     <div class="space"></div>
-                    <span class="label label-warning">Advertisment 5</span>
+                    <span class="label label-warning">{{advertisement5}}</span>
                     <div class="space"></div>
-                    <span class="label label-danger">Advertisment 6</span>
+                    <span class="label label-danger">{{advertisement6}}</span>
                 </div>
             </div>
         </div>
@@ -78,8 +78,8 @@
                             ></span>
                 </span>
             <div class="box-info">
-                <p class="size-h2">1550</p>
-                <p class="text-muted">Search Text 1</p>
+                <p class="size-h2">{{count.count1}}</p>
+                <p class="text-muted">{{count.searchText1}}</p>
             </div>
         </div>
     </div>
@@ -92,8 +92,8 @@
                             ></span>
                 </span>
             <div class="box-info">
-                <p class="size-h2">1312</p>
-                <p class="text-muted">Search Text 2</p>
+                <p class="size-h2">{{count.count2}}</p>
+                <p class="text-muted">{{count.searchText2}}</p>
             </div>
         </div>
     </div>
@@ -106,8 +106,8 @@
                             ></span>
                 </span>
             <div class="box-info">
-                <p class="size-h2">1250</p>
-                <p class="text-muted">Search Text 3</p>
+                <p class="size-h2">{{count.count3}}</p>
+                <p class="text-muted">{{count.searchText3}}</p>
             </div>
         </div>
     </div>
@@ -120,8 +120,8 @@
                            ></span>
                 </span>
             <div class="box-info">
-                <p class="size-h2">1090</p>
-                <p class="text-muted">Search Text 4</p>
+                <p class="size-h2">{{count.count4}}</p>
+                <p class="text-muted">{{count.searchText4}}</p>
             </div>
         </div>
     </div>

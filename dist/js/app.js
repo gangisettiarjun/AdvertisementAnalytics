@@ -9196,9 +9196,21 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/dashboards/dashboard.html",
                 resolve:{
                     'getImpVsClicksData' : function(getImpVsClicks){
-
                         return getImpVsClicks.promise;
+                    },
+
+                    'getCTR' : function(getCTRService){
+                        return getCTRService.promise;
+                    },
+
+                    'getPopularAds' : function(getPopularAdsService){
+                        return getPopularAdsService.promise;
+                    },
+
+                    'getSearchAdCount' : function(getSearchAdCountService){
+                        return getSearchAdCountService.promise;
                     }
+
                 }
             }).when("/dashboard/dashboard2", {
                 templateUrl: "app/views/dashboards/dashboard2.html"
@@ -9638,10 +9650,8 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
     ]).controller("DashboardCtrl", ["$scope","$http","getCTRService",
         function($scope,$http,getCTRService) {
   
-           getCTRService.getData().then(function(response){
-                $scope.ctr=response;
+           $scope.ctr=getCTRService.getCTR();
 
-           });
         }
     ]).controller("PredictDataCtrl", ["$scope","$http",
             
@@ -9702,6 +9712,21 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
           }
+
+    ]).controller("popularAdCtrl",["$scope","getPopularAdsService",
+
+
+    function($scope, getPopularAdsService){
+
+        console.log(getPopularAdsService.getAd1());
+
+        $scope.advertisement1 = getPopularAdsService.getAd1();
+        $scope.advertisement2 = getPopularAdsService.getAd2();
+        $scope.advertisement3 = getPopularAdsService.getAd3();
+        $scope.advertisement4 = getPopularAdsService.getAd4();
+        $scope.advertisement5 = getPopularAdsService.getAd5();
+        $scope.advertisement6 = getPopularAdsService.getAd6();
+    }
 
     ]);
 
@@ -9995,7 +10020,8 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
 
             $scope.impressionsData=[];
 
-            $scope.impressionsData=getImpVsClicks.getData();
+            $scope.impressionsData1=getImpVsClicks.getData1();
+            $scope.impressionsData2=getImpVsClicks.getData2();
 
             $scope.chartjsBar = {
 
@@ -10007,7 +10033,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(56, 61, 67, 0.5)",
                         highlightFill: "rgba(56, 61, 67, 0.8)",
                         highlightStroke: "rgba(56, 61, 67, 0.8)",
-                        data: $scope.impressionsData
+                        data: $scope.impressionsData1
                     },
                     {
                         label: "My Second dataset",
@@ -10015,7 +10041,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         strokeColor: "rgba(219, 80, 49, 0.8)",
                         highlightFill: "rgba(219, 80, 49, 0.9)",
                         highlightStroke: "rgba(219, 80, 49, 0.9)",
-                        data: $scope.impressionsData
+                        data: $scope.impressionsData2
                     }
                 ]
                 };
@@ -10331,58 +10357,15 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
         }
     ]).controller("flotChartCtrl.realtime", ["$scope",
         function() {}
-    ]).controller("sparklineCtrl", ["$scope",
-        function($scope) {
-            return $scope.demoData1 = {
-                sparkData: [3, 1, 2, 2, 4, 6, 4, 5, 2, 4, 5, 3, 4, 6, 4, 7],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#fff",
-                    highlightLineColor: "#fff",
-                    fillColor: "#383d43",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100%",
-                    height: "150px"
-                }
-            },$scope.simpleChart1 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#db5031",
-                    fillColor: "#c1bfc0",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100px",
-                    height: "50px"
-                }
-            }, $scope.simpleChart2 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#db5031",
-                    width: "100px",
-                    height: "50px"
-                }
-            },$scope.simpleChartlong = {
-                sparkData: [1, 3, 2, 5, 4, 2, 1, 7, 1, 8, 4, 3, 5, 2, 4, 5, 1, 7, 1, 8],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#c1bfc0",
-                    width: "250px",
-                    height: "30px"
-                }
-            },$scope.simpleChart2long = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2, 5, 4, 2, 6, 2, 4, 3, 1],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#383d43",
-                    width: "200px",
-                    height: "30px"
-                }
-            }, $scope.simpleChart2info = {
+    ]).controller("sparklineCtrl", ["$scope","getSearchAdCountService",
+        function($scope,getSearchAdCountService) {
+             
+           // $scope.simpleChart2info ={};
+
+           $scope.count = getSearchAdCountService.getCount();
+
+
+             $scope.simpleChart2info = {
                 sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
                 sparkOptions: {
                     type: "bar",
@@ -10390,54 +10373,9 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                     width: "100px",
                     height: "30px"
                 }
-            }, $scope.simpleChart3 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "pie",
-                    sliceColors: ["#383d43", "#db5031", "#c1bfc0", "#fef9d9", "#503f3c", "#365340"],
-                    width: "50px",
-                    height: "50px"
-                }
-            }, $scope.tristateChart1 = {
-                sparkData: [1, 2, -3, -5, 3, 1, -4, 2],
-                sparkOptions: {
-                    type: "tristate",
-                    posBarColor: "#383d43",
-                    negBarColor: "#c1bfc0",
-                    width: "100%",
-                    height: "50px"
-                }
-            }, $scope.largeChart1 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "line",
-                    lineColor: "#db5031",
-                    highlightLineColor: "#7ACBEE",
-                    fillColor: "#c1bfc0",
-                    spotColor: !1,
-                    minSpotColor: !1,
-                    maxSpotColor: !1,
-                    width: "100%",
-                    height: "150px"
-                }
-            }, $scope.largeChart2 = {
-                sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
-                sparkOptions: {
-                    type: "bar",
-                    barColor: "#383d43",
-                    barWidth: 10,
-                    width: "100%",
-                    height: "150px"
-                }
-            }, $scope.largeChart3 = {
-                sparkData: [3, 1, 2, 3, 5],
-                sparkOptions: {
-                    type: "pie",
-                    sliceColors: ["#383d43", "#db5031", "#c1bfc0", "#fef9d9", "#503f3c", "#365340"],
-                    width: "150px",
-                    height: "150px"
-                }
             };
+
+            return $scope.simpleChart2info;
         }
     ]);
            
@@ -11652,30 +11590,113 @@ angular.module("app.ui.services", []).factory("loggit", [
             }
         };
     }
-]).factory("getCTRService", ["$http","$rootScope",
-    function($http,$rootScope) {
-        return  {
-            getData: function() {
-                return $http.get('http://localhost:5353/getCTR').then(function(response){ //wrap it inside another promise using then
-                            return response.data;  //only return friends 
-                        });
-            }
-           
-        };
-    }
-]).service("getImpVsClicks", ["$http",
+]).factory("getCTRService", ["$http",
     function($http) {
 
-        var finalData=[];
 
-        var promise = $http.get('http://localhost:5353/getImpVsClicks').success(function(data){
+        var finalData ="";
+
+        var promise = $http.get('http://localhost:5353/getCTR').success(function(data){
 
                 finalData=data;
         });
         return  {
             promise : promise,
-            getData: function() {
+            getCTR: function() {
                 return finalData;
+            }
+           
+        };
+
+    }
+]).service("getPopularAdsService", ["$http",
+    function($http) {
+
+
+        var ad1 ="";
+        var ad2 ="";
+        var ad3 ="";
+        var ad4 ="";
+        var ad5 ="";
+        var ad6 ="";
+
+        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){
+
+                ad1=data.Ad1;
+                console.log(data);  
+                ad2=data.Ad2;
+                ad3=data.Ad3;
+                ad4=data.Ad4;
+                ad5=data.Ad5;
+                ad6=data.Ad6;
+        });
+        return  {
+            promise : promise,
+            getAd1: function() {
+                return ad1;
+            },
+            getAd2: function(){
+                return ad2;
+            },
+            getAd3: function() {
+                return ad3;
+            },
+            getAd4: function(){
+                return ad4;
+            },
+            getAd5: function() {
+                return ad5;
+            },
+            getAd6: function(){
+                return ad6;
+            }
+           
+        };
+
+    }
+]).service("getSearchAdCountService", ["$http",
+    function($http) {
+
+
+        var resultdata = {};
+
+        var promise = $http.get('http://localhost:5353/getSearchAdCount').success(function(data){
+
+                resultdata=data;
+                console.log(data);
+        });
+        return  {
+            promise : promise,
+            getCount: function() {
+                return resultdata;
+            }
+           
+        };
+
+    }
+]).service("getImpVsClicks", ["$http",
+    function($http) {
+
+        var data1=[];
+        var data2=[];
+
+        var promise = $http.get('http://localhost:5353/getImpVsClicks').success(function(data){
+
+                data1=data.data1;
+                console.log(data);
+                console.log("data logged");
+                console.log(data.data1);
+                console.log(data.data2);
+                data2=data.data2;
+
+        });
+        return  {
+            promise : promise,
+            getData1: function() {
+                return data1;
+            },
+            getData2: function(){
+                return data2;
             }
            
         };

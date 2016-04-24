@@ -29,9 +29,21 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/dashboards/dashboard.html",
                 resolve:{
                     'getImpVsClicksData' : function(getImpVsClicks){
-
                         return getImpVsClicks.promise;
+                    },
+
+                    'getCTR' : function(getCTRService){
+                        return getCTRService.promise;
+                    },
+
+                    'getPopularAds' : function(getPopularAdsService){
+                        return getPopularAdsService.promise;
+                    },
+
+                    'getSearchAdCount' : function(getSearchAdCountService){
+                        return getSearchAdCountService.promise;
                     }
+
                 }
             }).when("/dashboard/dashboard2", {
                 templateUrl: "app/views/dashboards/dashboard2.html"
