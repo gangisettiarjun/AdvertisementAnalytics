@@ -3,6 +3,22 @@ var express = require('express');
 var app = express();
 var path = require('path');
 var bodyParser = require('body-parser');
+var mysql= require('mysql');
+
+/*Db connect code
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "jay",
+  password: "jay"
+});
+
+con.connect(function(err){
+  if(err){
+    console.log('Error connecting to Db');
+    return;
+  }
+  console.log('Connection established');
+});*/
 
 
 
