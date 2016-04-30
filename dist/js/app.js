@@ -9658,26 +9658,19 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
             function($scope,$http){
 
+                    $scope.sendPredictData= function(){
+                        var req =   $http({ method: "post", url:"http://localhost:5353/predictData", data: {searchkeys:$scope.searchkeys, adtitle:$scope.adtitle, adtext:$scope.adtext, locations:$scope.locations, adtype:$scope.adtype}}).
+                        
+                            then(function(response) {
+                                        console.log("things"+response.data);
+                                        console.log(window.location);
+                                        window.location.href='/#/results';
+                                  },function(response){
+                                    
+                                  });
+                    };
+            }
 
-            $scope.sendPredictData = function(){
-
-            var data2={ "hi " : "fucker"};
-  
-            console.log("Clicked ");
-            $http.post('http://localhost:5353/predictData',data2).
-                        then(function(response) {
-                                console.log("things"+response.data);
-                                console.log(window.location);
-                                window.location.href='/#/results';
-                          },function(response){
-                            
-                          });
-            };
-
-            
-
-
-        }
     ]).controller("ResultsCtrl", ["$scope","$http",
             
 
