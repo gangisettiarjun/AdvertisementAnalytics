@@ -38,9 +38,47 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
             function($scope,$http){
 
+                
+
+
                     $scope.sendPredictData= function(){
-                        var req =   $http({ method: "post", url:"http://localhost:5353/predictData", data: {searchkeys:$scope.searchkeys, adtitle:$scope.adtitle, adtext:$scope.adtext, locations:$scope.locations, adtype:$scope.adtype}}).
+
+                        var customerinfo = {
+                            "adtitle" : '',
+                            "adtext"  : '',
+                            "locations": [],
+                            "adtype": '',
+                            "searchkeys":[]
+                        };
+
+
+
+                        console.log("clicked");
                         
+                        customerinfo.searchkeys=$scope.searchkeys.split(",");
+                    
+                        customerinfo.locations=$scope.locations.split(",");
+
+                        customerinfo.adtitle=$scope.adtitle;
+
+                        customerinfo.adtext=$scope.adData;
+
+                        customerinfo.adtype=$scope.adtype;
+
+
+                        console.log(customerinfo);
+
+
+                                   var req = {
+                                                method: 'POST',
+                                                url: 'http://localhost:5353/predictData',
+                                                headers: {
+                                                  'Content-Type': 'application/json'
+                                                },
+                                                data: customerinfo  
+                                            };
+
+                        var res =   $http(req).                        
                             then(function(response) {
                                         console.log("things"+response.data);
                                         console.log(window.location);

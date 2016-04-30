@@ -128,14 +128,14 @@ app.post('/predictData',function(req,res){
 
 console.log("received",req.body);
 
-var searchkeys = req.param("searchkeys");
-var adtitle = req.param("adtitle");
-var adtext = req.param("adtext");
-var locations = req.param("locations");
-var adtype = req.param("adtype");
+// var searchkeys = req.param("searchkeys");
+// var adtitle = req.param("adtitle");
+// var adtext = req.param("adData");
+// var locations = req.param("locations");
+// var adtype = req.param("adtype");
 
-console.log("searchkeys is : "+searchkeys);
-console.log("adtitle is : "+adtitle);
+// console.log("searchkeys is : "+searchkeys);
+// console.log("adtitle is : "+adtitle);
 
 
 res.send(200,"Thanks");
