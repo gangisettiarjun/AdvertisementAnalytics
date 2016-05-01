@@ -9185,7 +9185,7 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
     }] ).config(["$routeProvider",
     function($routeProvider) {
         return $routeProvider.when("/", {
-            redirectTo: "/dashboard"
+            redirectTo: "/dashboard/dashboard"
         }).when("/dashboard", {
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/predictor", {
@@ -9209,6 +9209,9 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
 
                     'getSearchAdCount' : function(getSearchAdCountService){
                         return getSearchAdCountService.promise;
+                    },
+                    'getMonthData' : function(getMonthData){
+                        return getMonthData.promise;
                     }
 
                 }
@@ -9658,9 +9661,6 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
             function($scope,$http){
 
-                
-
-
                     $scope.sendPredictData= function(){
 
                         var customerinfo = {
@@ -9670,7 +9670,6 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                             "adtype": '',
                             "searchkeys":[]
                         };
-
 
 
                         console.log("clicked");
@@ -9700,8 +9699,6 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                         var res =   $http(req).                        
                             then(function(response) {
-                                        console.log("things"+response.data);
-                                        console.log(window.location);
                                         window.location.href='/#/results';
                                   },function(response){
                                     
@@ -9711,14 +9708,9 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
     ]).controller("ResultsCtrl", ["$scope","$http",
             
-
             function($scope,$http){
 
-
             console.log("welcome to results");
-
-            
-
 
         }
     ]) . controller("SigninCtrl",["$scope","$http",
@@ -9749,14 +9741,17 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
     function($scope, getPopularAdsService){
 
-        console.log(getPopularAdsService.getAd1());
+        var popularAds = getPopularAdsService.getPopularAds();
+        console.log(popularAds);
 
-        $scope.advertisement1 = getPopularAdsService.getAd1();
-        $scope.advertisement2 = getPopularAdsService.getAd2();
-        $scope.advertisement3 = getPopularAdsService.getAd3();
-        $scope.advertisement4 = getPopularAdsService.getAd4();
-        $scope.advertisement5 = getPopularAdsService.getAd5();
-        $scope.advertisement6 = getPopularAdsService.getAd6();
+        $scope.advertisement1 = popularAds.Ad1;
+        $scope.advertisement2 = popularAds.Ad2;
+        $scope.advertisement3 = popularAds.Ad3;
+        $scope.advertisement4 = popularAds.Ad4;
+        $scope.advertisement5 = popularAds.Ad5;
+        $scope.advertisement6 = popularAds.Ad6;
+        $scope.advertisement7 = popularAds.Ad7;
+        $scope.advertisement8 = popularAds.Ad8;
     }
 
     ]);
@@ -10056,7 +10051,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
 
             $scope.chartjsBar = {
 
-                labels: ["January", "February", "March", "April", "May", "June", "July","Aug","Sep","Oct","Nov","Dec"],
+                labels: ["2009", "2010", "2011", "2012", "2013","2014","2015","2016"],
                 datasets: [
                     {
                         label: "My First dataset",
@@ -10080,35 +10075,11 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
             console.log($scope.chartjsBar);
             return $scope.chartjsBar;
         }
-    ]).controller("flotChartCtrl", ["$scope",
-        function($scope) {
+    ]).controller("flotChartCtrl", ["$scope","getMonthData",
+        function($scope,getMonthData) {
             var areaChart, barChart, lineChart1;
 
-            return lineChart1 = {}, lineChart1.data1 = [
-                [1, 35],
-                [2, 20],
-                [3, 14],
-                [4, 10],
-                [5, 10],
-                [6, 20],
-                [7, 28],
-                [8, 26],
-                [9, 22],
-                [10, 23],
-                [11, 24]
-            ], lineChart1.data2 = [
-                [1, 9],
-                [2, 15],
-                [3, 17],
-                [4, 21],
-                [5, 16],
-                [6, 15],
-                [7, 13],
-                [8, 15],
-                [9, 29],
-                [10, 21],
-                [11, 29]
-            ], $scope.line1 = {}, $scope.line1.data = [{
+            return lineChart1 = {}, lineChart1.data1 = getMonthData.getData1(), lineChart1.data2 = getMonthData.getData2(), $scope.line1 = {}, $scope.line1.data = [{
                 data: lineChart1.data1,
                 label: "Past Month",
                 lines: {
@@ -10159,18 +10130,18 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                 },
                 xaxis: {
                     ticks: [
-                        [1, "Ad1"],
-                        [2, "Ad2."],
-                        [3, "Ad3."],
-                        [4, "Ad4."],
-                        [5, "Ad5"],
-                        [6, "Ad6"],
-                        [7, "Ad7"],
-                        [8, "Ad8."],
-                        [9, "Ad9."],
-                        [10, "Ad10."],
-                        [11, "Ad11."],
-                        [12, "Ad12."]
+                        [1, "Boots UK"],
+                        [2, "HgCapital"],
+                        [3, "Espares"],
+                        [4, "Smith"],
+                        [5, "RealVNC"],
+                        [6, "Google"],
+                        [7, "Bee Craft"],
+                        [8, "Fenners"],
+                        [9, "Quarry"],
+                        [10, "Cambridge"],
+                        [11, "Britannia"],
+                        [12, "Polytechnic."]
                     ]
                 }
             }, areaChart = {}, areaChart.data1 = [
@@ -10393,8 +10364,8 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
              
            // $scope.simpleChart2info ={};
 
-           $scope.count = getSearchAdCountService.getCount();
-
+           $scope.count = getSearchAdCountService.getAdsWithCount();
+        console.log($scope.count);
 
              $scope.simpleChart2info = {
                 sparkData: [3, 1, 2, 3, 5, 3, 4, 2],
@@ -11644,42 +11615,16 @@ angular.module("app.ui.services", []).factory("loggit", [
     function($http) {
 
 
-        var ad1 ="";
-        var ad2 ="";
-        var ad3 ="";
-        var ad4 ="";
-        var ad5 ="";
-        var ad6 ="";
+        var popularAds = {};
 
-        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){
-
-                ad1=data.Ad1;
-                console.log(data);  
-                ad2=data.Ad2;
-                ad3=data.Ad3;
-                ad4=data.Ad4;
-                ad5=data.Ad5;
-                ad6=data.Ad6;
+        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){ 
+                popularAds=data;
+                
         });
         return  {
             promise : promise,
-            getAd1: function() {
-                return ad1;
-            },
-            getAd2: function(){
-                return ad2;
-            },
-            getAd3: function() {
-                return ad3;
-            },
-            getAd4: function(){
-                return ad4;
-            },
-            getAd5: function() {
-                return ad5;
-            },
-            getAd6: function(){
-                return ad6;
+            getPopularAds : function(){
+                return popularAds;
             }
            
         };
@@ -11693,12 +11638,21 @@ angular.module("app.ui.services", []).factory("loggit", [
 
         var promise = $http.get('http://localhost:5353/getSearchAdCount').success(function(data){
 
-                resultdata=data;
+                
                 console.log(data);
+                resultdata.count1=data[0].count;
+                resultdata.searchText1=data[0].searchKeyText;
+                resultdata.count2=data[1].count;
+                resultdata.searchText2=data[1].searchKeyText;
+                resultdata.count3=data[2].count;
+                resultdata.searchText3=data[2].searchKeyText;
+                resultdata.count4=data[3].count;
+                resultdata.searchText4=data[3].searchKeyText;
+            
         });
         return  {
             promise : promise,
-            getCount: function() {
+            getAdsWithCount: function() {
                 return resultdata;
             }
            
@@ -11714,10 +11668,6 @@ angular.module("app.ui.services", []).factory("loggit", [
         var promise = $http.get('http://localhost:5353/getImpVsClicks').success(function(data){
 
                 data1=data.data1;
-                console.log(data);
-                console.log("data logged");
-                console.log(data.data1);
-                console.log(data.data2);
                 data2=data.data2;
 
         });
@@ -11732,4 +11682,37 @@ angular.module("app.ui.services", []).factory("loggit", [
            
         };
     }
+]).service("getMonthData",["$http",
+
+    function($http) {
+
+        var data1=[];
+        var data2=[];
+
+        var promise = $http.get('http://localhost:5353/getMonthData').success(function(data){
+
+                data1=data.data1;
+                data2=data.data2;
+                console.log("promise fulfilled");
+                console.log(data);
+
+        });
+        return  {
+            promise : promise,
+            getData1: function() {
+                return data1;
+            },
+            getData2: function(){
+                return data2;
+            }
+           
+        };
+    }
+
+
+
 ]);
+
+
+
+

@@ -18,7 +18,7 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
     }] ).config(["$routeProvider",
     function($routeProvider) {
         return $routeProvider.when("/", {
-            redirectTo: "/dashboard"
+            redirectTo: "/dashboard/dashboard"
         }).when("/dashboard", {
                 templateUrl: "app/views/dashboards/dashboard.html"
             }).when("/predictor", {
@@ -42,6 +42,9 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
 
                     'getSearchAdCount' : function(getSearchAdCountService){
                         return getSearchAdCountService.promise;
+                    },
+                    'getMonthData' : function(getMonthData){
+                        return getMonthData.promise;
                     }
 
                 }

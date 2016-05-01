@@ -1,0 +1,12 @@
+{	
+	"adVsClicks" : "SELECT Count(Ad_Id) as Ad_Impressions, SUM(Is_Clicked) as Ads_Clicked, YEAR(Search_Time) as Search_Year FROM Ad_Impressions INNER JOIN Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id group by Search_Year having Search_Year > '2003' order by Search_Year;",
+
+	"popularads" : "SELECT Ad_Key_Text FROM Ad_Keywords_Combo INNER JOIN Ad_Keywords WHERE Ad_Keywords_Combo.Ad_Key_Id = Ad_Keywords.Ad_Key_Id GROUP BY Ad_Key_Text ORDER BY Ad_Id DESC LIMIT 8;",
+
+	"popularAdCount" : "SELECT Search_Key_Text, COUNT(Search_Id) as Count FROM Search_Keywords_Combo INNER JOIN Search_Keywords WHERE Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id GROUP BY Search_Key_Text ORDER BY COUNT DESC LIMIT 4;",
+
+	"trendingAds"  : {
+		"currentMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 8 AND YEAR(Search_Time) = 2009 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;",
+		"pastMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 11 AND YEAR(Search_Time) = 2010 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;"
+	}
+}
