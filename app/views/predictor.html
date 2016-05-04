@@ -67,12 +67,28 @@
                                     </div>
                                     <br><br>
                                 </form>  
+                            
                             </div>
                     </section>
                 </div>
                 <div class="col-md-2"></div>
             </div>
         </div>
+    
+        <div class="row loading-predict" ng-show="isPredicting == true">
+        <div class="load_circle_wrapper predict-spinner">
+            <h4><strong>Prediction on the way, Please Wait...</strong></h4></div>
+            <div class="loading_spinner ">
+                <div id="wrap_spinner">
+                    <div class="loading outer">
+                        <div class="loading inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+       
 
         <div class="row">
             <div class="page page-icons">

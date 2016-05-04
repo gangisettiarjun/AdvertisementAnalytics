@@ -35,10 +35,15 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
         }
     ]).controller("PredictDataCtrl", ["$scope","$http",
             
-
+            
+               
+            
             function($scope,$http){
+                 $scope.isPredicting=false;
 
                     $scope.sendPredictData= function(){
+
+                        $scope.isPredicting=true;
 
                         var customerinfo = {
                             "adtitle" : '',
@@ -76,6 +81,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                         var res =   $http(req).                        
                             then(function(response) {
+                                        console.log('yes');
                                         window.location.href='/#/results';
                                   },function(response){
                                     

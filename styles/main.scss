@@ -121,8 +121,11 @@ $info-alt:#8170ca;
 
 }
 
-.flot-overlay{
-  color:#1B5E20 ! important;
+.loading-predict{
+  text-align:center;
+  .predict-spinner{
+      position : relative !important;
+  }
 }
 
 /************************************

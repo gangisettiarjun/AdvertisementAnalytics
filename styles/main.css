@@ -48,8 +48,10 @@ Dark brown - #302624
     font-size: 32px;
     color: red; }
 
-.flot-overlay {
-  color: #1B5E20 !important; }
+.loading-predict {
+  text-align: center; }
+  .loading-predict .predict-spinner {
+    position: relative !important; }
 
 /************************************
 1 - General CSS

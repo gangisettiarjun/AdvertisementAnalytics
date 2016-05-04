@@ -9660,10 +9660,15 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
         }
     ]).controller("PredictDataCtrl", ["$scope","$http",
             
-
+            
+               
+            
             function($scope,$http){
+                 $scope.isPredicting=false;
 
                     $scope.sendPredictData= function(){
+
+                        $scope.isPredicting=true;
 
                         var customerinfo = {
                             "adtitle" : '',
@@ -9701,6 +9706,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                         var res =   $http(req).                        
                             then(function(response) {
+                                        console.log('yes');
                                         window.location.href='/#/results';
                                   },function(response){
                                     
@@ -10060,7 +10066,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         fillColor: "rgba(56, 61, 67, 0.5)",
                         strokeColor: "rgba(56, 61, 67, 0.5)",
                         highlightFill: "rgba(56, 61, 67, 0.8)",
-                        highlightStroke: "rgba(56, 61, 67, 0.58",
+                        highlightStroke: "rgba(56, 61, 67, 0.8)",
                         data: $scope.impressionsData1
                     },
                     {

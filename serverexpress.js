@@ -168,7 +168,11 @@
   console.log("adtype is : "+req.body.adtype);
 
 
-  res.status(200).send("Thanks");
+  setTimeout(function(){
+    console.log("After 5 seconds");
+    res.status(200).send("Thanks");
+  },5000);
+  
 
   });
 
