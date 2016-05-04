@@ -440,10 +440,10 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                     },
                     {
                         label: "My Second dataset",
-                        fillColor: "rgba(219, 80, 49, 0.8)",
-                        strokeColor: "rgba(219, 80, 49, 0.8)",
-                        highlightFill: "rgba(219, 80, 49, 0.9)",
-                        highlightStroke: "rgba(219, 80, 49, 0.9)",
+                        fillColor: "rgba(183,28,28,0.8)",
+                        strokeColor: "rgba(183,28,28,0.8)",
+                        highlightFill: "rgba(183,28,28,0.8)",
+                        highlightStroke: "rgba(183,28,28,0.8)",
                         data: $scope.impressionsData2
                     }
                 ]
@@ -493,7 +493,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                     shadowSize: 0
 
                 },
-                colors: ["#c1bfc0", "#db5031"],
+                colors: ["#c1bfc0", "#B71C1C"],
                 tooltip: !0,
                 tooltipOpts: {
                     defaultTheme: !1

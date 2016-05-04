@@ -42,7 +42,8 @@ Dark brown - #302624
 $green: #45825A;
 $blue:#383d43;
 $blue-dark: #272b2f;
-$orange:#db5031;
+//Changed from #db5031 to #1B5E20
+$orange:#B71C1C;
 $light-gray:#c1bfc0;
 $yellow:#fef9d9;
 $dark-brown: #503f3c;
@@ -118,6 +119,10 @@ $info-alt:#8170ca;
     color : red;
  }
 
+}
+
+.flot-overlay{
+  color:#1B5E20 ! important;
 }
 
 /************************************

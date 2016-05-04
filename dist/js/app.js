@@ -9192,6 +9192,8 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/predictor.html"
             }).when("/results", {
                 templateUrl: "app/views/results.html"
+            }).when("/profile", {
+                templateUrl: "app/views/profile.html"
             }).when("/dashboard/dashboard", {
                 templateUrl: "app/views/dashboards/dashboard.html",
                 resolve:{
@@ -10058,15 +10060,15 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                         fillColor: "rgba(56, 61, 67, 0.5)",
                         strokeColor: "rgba(56, 61, 67, 0.5)",
                         highlightFill: "rgba(56, 61, 67, 0.8)",
-                        highlightStroke: "rgba(56, 61, 67, 0.8)",
+                        highlightStroke: "rgba(56, 61, 67, 0.58",
                         data: $scope.impressionsData1
                     },
                     {
                         label: "My Second dataset",
-                        fillColor: "rgba(219, 80, 49, 0.8)",
-                        strokeColor: "rgba(219, 80, 49, 0.8)",
-                        highlightFill: "rgba(219, 80, 49, 0.9)",
-                        highlightStroke: "rgba(219, 80, 49, 0.9)",
+                        fillColor: "rgba(183,28,28,0.8)",
+                        strokeColor: "rgba(183,28,28,0.8)",
+                        highlightFill: "rgba(183,28,28,0.8)",
+                        highlightStroke: "rgba(183,28,28,0.8)",
                         data: $scope.impressionsData2
                     }
                 ]
@@ -10116,7 +10118,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
                     shadowSize: 0
 
                 },
-                colors: ["#c1bfc0", "#db5031"],
+                colors: ["#c1bfc0", "#B71C1C"],
                 tooltip: !0,
                 tooltipOpts: {
                     defaultTheme: !1

@@ -160,19 +160,15 @@
 
   app.post('/predictData',function(req,res){
 
-  console.log("received",req.body);
 
-  // var searchkeys = req.param("searchkeys");
-  // var adtitle = req.param("adtitle");
-  // var adtext = req.param("adData");
-  // var locations = req.param("locations");
-  // var adtype = req.param("adtype");
-
-  // console.log("searchkeys is : "+searchkeys);
-  // console.log("adtitle is : "+adtitle);
+  console.log("searchkeys is : "+req.body.searchkeys);
+  console.log("adtitle is : "+req.body.adtitle);
+  console.log("adtext is : "+req.body.adtext);
+  console.log("locations is : "+req.body.locations);
+  console.log("adtype is : "+req.body.adtype);
 
 
-  res.send(200,"Thanks");
+  res.status(200).send("Thanks");
 
   });
 
@@ -210,9 +206,6 @@
   
 
   con.query(dbQueries.trendingAds.pastMonth, function(err,pastMonthResp){
-
-
-      
 
       for(var i=0;i<pastMonthResp.length;i++){
         data1[i][1]=pastMonthResp[i].No_of_Clicks;
