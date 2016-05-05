@@ -9671,26 +9671,27 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                         $scope.isPredicting=true;
 
                         var customerinfo = {
-                            "adtitle" : '',
-                            "adtext"  : '',
-                            "locations": [],
-                            "adtype": '',
-                            "searchkeys":[]
+                            "Ad_Title" : '',
+                            "Ad_Display_Position"  : '',
+                            "Ad_Type": '',
+                            "Search_Key_Text": '',
+                            "Search_Location":'',
+                            "Linking_Site_URL":'',
+                            "Parent_Site_URL":'',
+                            "Device_Type":''
                         };
 
 
                         console.log("clicked");
                         
-                        customerinfo.searchkeys=$scope.searchkeys.split(",");
-                    
-                        customerinfo.locations=$scope.locations.split(",");
-
-                        customerinfo.adtitle=$scope.adtitle;
-
-                        customerinfo.adtext=$scope.adData;
-
-                        customerinfo.adtype=$scope.adtype;
-
+                        customerinfo.Ad_Title=$scope.adtitle;
+                        customerinfo.Ad_Display_Position=$scope.Ad_Display_Position;
+                        customerinfo.Ad_Type=$scope.Ad_Type;
+                        customerinfo.Search_Key_Text=$scope.Search_Key_Text;
+                        customerinfo.Search_Location=$scope.Search_Location;
+                        customerinfo.Linking_Site_URL=$scope.Linking_Site_URL;
+                        customerinfo.Parent_Site_URL=$scope.Parent_Site_URL;
+                        customerinfo.Device_Type=$scope.Device_Type;
 
                         console.log(customerinfo);
 
