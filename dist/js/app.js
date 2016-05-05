@@ -9192,6 +9192,11 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/predictor.html"
             }).when("/results", {
                 templateUrl: "app/views/results.html"
+                // resolve:{
+                //     'getCTRResult' : function(getCTRResult){
+                //         return getCTRResult.promise;
+                //     }
+                // }
             }).when("/profile", {
                 templateUrl: "app/views/profile.html"
             }).when("/dashboard/dashboard", {
@@ -9199,10 +9204,6 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 resolve:{
                     'getImpVsClicksData' : function(getImpVsClicks){
                         return getImpVsClicks.promise;
-                    },
-
-                    'getCTR' : function(getCTRService){
-                        return getCTRService.promise;
                     },
 
                     'getPopularAds' : function(getPopularAdsService){
@@ -9652,18 +9653,18 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
         }
-    ]).controller("DashboardCtrl", ["$scope","$http","getCTRService",
-        function($scope,$http,getCTRService) {
-  
-           $scope.ctr=getCTRService.getCTR();
+    ]).controller("DashboardCtrl", ["$scope","$http","getCTRResult",
+        function($scope,$http,getCTRResult) {
+            
+            var ctr = getCTRResult.getCTR();
+            $scope.ctr=ctr.toFixed(2);
 
         }
-    ]).controller("PredictDataCtrl", ["$scope","$http",
-            
-            
-               
-            
-            function($scope,$http){
+    ]).controller("PredictDataCtrl", ["$scope","$http","getCTRResult",
+                        
+        function($scope,$http,getCTRResult){
+
+                 $scope.ctr='';
                  $scope.isPredicting=false;
 
                     $scope.sendPredictData= function(){
@@ -9693,12 +9694,24 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                         customerinfo.Parent_Site_URL=$scope.Parent_Site_URL;
                         customerinfo.Device_Type=$scope.Device_Type;
 
+                        var test={
+                            "Ad_Title": "Super Creative",
+                            "Ad_Display_Position": "3",
+                            "Ad_Type": "Type 2",
+                            "Search_Key_Text": "Rusholme",
+                            "Search_Location": "Tucson",
+                            "Linking_Site_URL": "http://www.concordatwatch.eu/",
+                            "Parent_Site_URL": "http://www.romasupportgroup.org.uk/",
+                            "Device_Type": "Position 1"
+                        };
+
+
                         console.log(customerinfo);
 
 
                                    var req = {
                                                 method: 'POST',
-                                                url: 'http://localhost:5353/predictData',
+                                                url: 'http://127.0.0.1:5000/ad_model/api/v1/ctr_prediction',
                                                 headers: {
                                                   'Content-Type': 'application/json'
                                                 },
@@ -9707,8 +9720,13 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                         var res =   $http(req).                        
                             then(function(response) {
-                                        console.log('yes');
+                
+                                        $scope.ctr=response.data.CTR_Probability;
+                                        console.log($scope.ctr);
+                                        getCTRResult.setCTR(response.data.CTR_Probability);
                                         window.location.href='/#/results';
+                                    
+                                        
                                   },function(response){
                                     
                                   });
@@ -10666,130 +10684,130 @@ angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter",
     function($scope, $filter) {
         var init;
         return $scope.stores = [{
-            name: "Nijiya Market",
-            price: "$$",
+            name: "HgCapital",
+            price: "Type2",
             sales: 292,
-            rating: 4
+            rating: 0.67
         }, {
-            name: "Eat On Monday Truck",
-            price: "$",
+            name: "RealVNC",
+            price: "Type3",
             sales: 119,
-            rating: 4.3
+            rating: 0.32
         }, {
-            name: "Tea Era",
-            price: "$",
+            name: "Smith",
+            price: "Type1",
             sales: 874,
-            rating: 4
+            rating: 0.47
         }, {
-            name: "Rogers Deli",
-            price: "$",
+            name: "Google",
+            price: "Type1",
             sales: 347,
-            rating: 4.2
+            rating: 0.70
         }, {
-            name: "MoBowl",
-            price: "$$$",
+            name: "Quarry",
+            price: "Type3",
             sales: 24,
-            rating: 4.6
+            rating: 0.48
         }, {
-            name: "The Milk Pail Market",
-            price: "$",
+            name: "Britania",
+            price: "Type4",
             sales: 543,
-            rating: 4.5
+            rating: 0.67
         }, {
-            name: "Nob Hill Foods",
-            price: "$$",
+            name: "Bee Craft",
+            price: "Type2",
             sales: 874,
-            rating: 4
+            rating: 0.54
         }, {
-            name: "Scratch",
-            price: "$$$",
+            name: "Fenners",
+            price: "Type3",
             sales: 643,
-            rating: 3.6
+            rating: 0.72
         }, {
             name: "Gochi Japanese Fusion Tapas",
-            price: "$$$",
+            price: "Type1",
             sales: 56,
-            rating: 4.1
+            rating: 0.83
         }, {
-            name: "Cost Plus World Market",
-            price: "$$",
+            name: "Boots UK",
+            price: "Type1",
             sales: 79,
-            rating: 4
+            rating: 0.92
         }, {
-            name: "Bumble Bee Health Foods",
-            price: "$$",
+            name: "Espares",
+            price: "Type4",
             sales: 43,
-            rating: 4.3
+            rating: 0.64
+        }, {
+            name: "Cambridge",
+            price: "Type3",
+            sales: 219,
+            rating: 0.59
         }, {
             name: "Costco",
-            price: "$$",
-            sales: 219,
-            rating: 3.6
-        }, {
-            name: "Red Rock Coffee Co",
-            price: "$",
+            price: "Type2",
             sales: 765,
-            rating: 4.1
+            rating: 0.79
         }, {
             name: "99 Ranch Market",
-            price: "$",
+            price: "Type3",
             sales: 181,
-            rating: 3.4
+            rating: 0.67
         }, {
             name: "Mi Pueblo Food Center",
-            price: "$",
+            price: "Type1",
             sales: 78,
-            rating: 4
+            rating: 0.86
         }, {
             name: "Cucina Venti",
-            price: "$$",
+            price: "Type2",
             sales: 163,
-            rating: 3.3
+            rating: 0.45
         }, {
             name: "Sufi Coffee Shop",
-            price: "$",
+            price: "Type4",
             sales: 113,
-            rating: 3.3
+            rating: 0.62
         }, {
             name: "Dana Street Roasting",
-            price: "$",
+            price: "Type2",
             sales: 316,
-            rating: 4.1
+            rating: 0.42
         }, {
             name: "Pearl Cafe",
-            price: "$",
+            price: "Type4",
             sales: 173,
-            rating: 3.4
+            rating: 0.39
         }, {
             name: "Posh Bagel",
-            price: "$",
+            price: "Type2",
             sales: 140,
-            rating: 4
+            rating: 0.68
         }, {
             name: "Artisan Wine Depot",
-            price: "$$",
+            price: "Type3",
             sales: 26,
-            rating: 4.1
+            rating: 0.58
         }, {
             name: "Hong Kong Chinese Bakery",
-            price: "$",
+            price: "Type3",
             sales: 182,
-            rating: 3.4
+            rating: 0.88
         }, {
             name: "Starbucks",
-            price: "$$",
+            price: "Type1",
             sales: 97,
-            rating: 3.7
+            rating: 0.59
         }, {
             name: "Tapioca Express",
-            price: "$",
+            price: "Type2",
             sales: 301,
-            rating: 3
+            rating: 0.30
         }, {
             name: "House of Bagels",
-            price: "$",
+            price: "Type4",
             sales: 82,
-            rating: 4.4
+            rating: 0.41
         }], $scope.searchKeywords = "", $scope.filteredStores = [], $scope.row = "", $scope.select = function(page) {
             var end, start;
             return start = (page - 1) * $scope.numPerPage, end = start + $scope.numPerPage, $scope.currentPageStores = $scope.filteredStores.slice(start, end);
@@ -11601,22 +11619,41 @@ angular.module("app.ui.services", []).factory("loggit", [
             }
         };
     }
-]).factory("getCTRService", ["$http",
-    function($http) {
+]).factory("getCTRResult", ["$http","$rootScope",
+    function($http,$rootScope) {
 
 
-        var finalData ="";
+        // var finalData ="";
 
-        var promise = $http.get('http://localhost:5353/getCTR').success(function(data){
+        // var promise = $rootScope.$on('eventName', function (event, data) {
+        //         console.log("event emitted");
+        //         console.log(data);
+        //         finalData=data;
 
-                finalData=data;
-        });
-        return  {
-            promise : promise,
-            getCTR: function() {
-                return finalData;
-            }
+        // });
+
+        // return  {
+        //     promise : promise,
+        //     getCTR: function() {
+        //         return finalData;
+        //     }
            
+        // };
+
+        var ctr='';
+
+        return {
+
+        setCTR : function(myCTR){
+            ctr=myCTR;
+        },
+
+        getCTR : function(){
+            return ctr;
+        }
+
+
+
         };
 
     }

@@ -21,7 +21,7 @@
         <div class="page page-table" data-ng-controller="tableCtrl">
 
             <section class="panel panel-default table-dynamic">
-                <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>Bordered table</strong></div>
+                <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>CTR table</strong></div>
 
                 <div class="table-filters">
                     <div class="row">
@@ -46,7 +46,7 @@
                     <thead>
                         <tr>
                             <th><div class="th">
-                                Store Name
+                                Advertisement Title
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('name') "
                                       data-ng-class="{active: row == 'name'}"></span>
@@ -55,7 +55,7 @@
                                       data-ng-class="{active: row == '-name'}"></span>
                             </div></th>
                             <th><div class="th">
-                                Price
+                                Ad Type
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('price') "
                                       data-ng-class="{active: row == 'price'}"></span>
@@ -64,7 +64,7 @@
                                       data-ng-class="{active: row == '-price'}"></span>
                             </div></th>
                             <th><div class="th">
-                                Sales (in 30 days)
+                                Visited Count(in 30 days)
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('sales') "
                                       data-ng-class="{active: row == 'sales'}"></span>
@@ -73,7 +73,7 @@
                                       data-ng-class="{active: row == '-sales'}"></span>
                             </div></th>
                             <th><div class="th">
-                                Rating
+                                CTR
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('rating') "
                                       data-ng-class="{active: row == 'rating'}"></span>

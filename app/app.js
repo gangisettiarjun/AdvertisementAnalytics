@@ -25,6 +25,11 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 templateUrl: "app/views/predictor.html"
             }).when("/results", {
                 templateUrl: "app/views/results.html"
+                // resolve:{
+                //     'getCTRResult' : function(getCTRResult){
+                //         return getCTRResult.promise;
+                //     }
+                // }
             }).when("/profile", {
                 templateUrl: "app/views/profile.html"
             }).when("/dashboard/dashboard", {
@@ -32,10 +37,6 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                 resolve:{
                     'getImpVsClicksData' : function(getImpVsClicks){
                         return getImpVsClicks.promise;
-                    },
-
-                    'getCTR' : function(getCTRService){
-                        return getCTRService.promise;
                     },
 
                     'getPopularAds' : function(getPopularAdsService){

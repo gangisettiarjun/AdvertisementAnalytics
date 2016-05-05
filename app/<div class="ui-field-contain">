@@ -1,0 +1,8 @@
+<div class="ui-field-contain">
+  <div data-role="rangeslider">
+    <label for="range-7a">Rangeslider:</label>
+    <input name="range-7a" id="range-7a" min="0" max="100" value="0" type="range" />
+    <label for="range-7b">Rangeslider:</label>
+    <input name="range-7b" id="range-7b" min="0" max="100" value="100" type="range" />
+  </div>
+</div>

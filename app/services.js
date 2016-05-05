@@ -30,22 +30,41 @@ angular.module("app.ui.services", []).factory("loggit", [
             }
         };
     }
-]).factory("getCTRService", ["$http",
-    function($http) {
+]).factory("getCTRResult", ["$http","$rootScope",
+    function($http,$rootScope) {
 
 
-        var finalData ="";
+        // var finalData ="";
 
-        var promise = $http.get('http://localhost:5353/getCTR').success(function(data){
+        // var promise = $rootScope.$on('eventName', function (event, data) {
+        //         console.log("event emitted");
+        //         console.log(data);
+        //         finalData=data;
 
-                finalData=data;
-        });
-        return  {
-            promise : promise,
-            getCTR: function() {
-                return finalData;
-            }
+        // });
+
+        // return  {
+        //     promise : promise,
+        //     getCTR: function() {
+        //         return finalData;
+        //     }
            
+        // };
+
+        var ctr='';
+
+        return {
+
+        setCTR : function(myCTR){
+            ctr=myCTR;
+        },
+
+        getCTR : function(){
+            return ctr;
+        }
+
+
+
         };
 
     }
