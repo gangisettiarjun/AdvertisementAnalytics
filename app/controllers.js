@@ -27,18 +27,20 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             };
 
         }
-    ]).controller("DashboardCtrl", ["$scope","$http","getCTRService",
-        function($scope,$http,getCTRService) {
-  
-           $scope.ctr=getCTRService.getCTR();
+    ]).controller("DashboardCtrl", ["$scope","$http","getCTRResult",
+        function($scope,$http,getCTRResult) {
+
+            var ctr = getCTRResult.getCTR();
+            console.log("in Dashboard");
+            console.log(ctr);
+            $scope.ctr=ctr.toFixed(2);
 
         }
-    ]).controller("PredictDataCtrl", ["$scope","$http",
-            
-            
-               
-            
-            function($scope,$http){
+    ]).controller("PredictDataCtrl", ["$scope","$http","getCTRResult",
+
+        function($scope,$http,getCTRResult){
+
+                 $scope.ctr='';
                  $scope.isPredicting=false;
 
                     $scope.sendPredictData= function(){
@@ -58,7 +60,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
 
                         console.log("clicked");
-                        
+
                         customerinfo.Ad_Title=$scope.adtitle;
                         customerinfo.Ad_Display_Position=$scope.Ad_Display_Position;
                         customerinfo.Ad_Type=$scope.Ad_Type;
@@ -68,30 +70,47 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                         customerinfo.Parent_Site_URL=$scope.Parent_Site_URL;
                         customerinfo.Device_Type=$scope.Device_Type;
 
-                        console.log(customerinfo);
+                        // var myjson = {
+                        //     "Ad_Title": "Super Creative",
+                        //     "Ad_Display_Position": "3",
+                        //     "Ad_Type": "Type 2",
+                        //     "Search_Key_Text": "Rusholme",
+                        //     "Search_Location": "Tucson",
+                        //     "Linking_Site_URL": "http://www.concordatwatch.eu/",
+                        //     "Parent_Site_URL": "http://www.romasupportgroup.org.uk/",
+                        //     "Device_Type": "Position 1"
+                        // };
+
+
+                        //console.log(myjson);
 
 
                                    var req = {
                                                 method: 'POST',
-                                                url: 'http://localhost:5353/predictData',
+                                                url: 'http://127.0.0.1:5000/ad_model/api/v1/ctr_prediction',
                                                 headers: {
                                                   'Content-Type': 'application/json'
                                                 },
-                                                data: customerinfo  
+                                                data: customerinfo
                                             };
 
-                        var res =   $http(req).                        
+                        var res =   $http(req).
                             then(function(response) {
-                                        console.log('yes');
+
+                                        $scope.ctr=response.data.CTR_Probability;
+                                        console.log($scope.ctr);
+                                        getCTRResult.setCTR(response.data.CTR_Probability);
                                         window.location.href='/#/results';
+
+
                                   },function(response){
-                                    
+
                                   });
                     };
             }
 
     ]).controller("ResultsCtrl", ["$scope","$http",
-            
+
             function($scope,$http){
 
             console.log("welcome to results");
@@ -106,15 +125,15 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
             $scope.signInUser = function(){
 
             var data2={ "hi " : "fucker"};
-  
+
             console.log("Clicked ");
             $http.post('http://localhost:5353/signin',data2).
                         then(function(response) {
                                 console.log("loggedin"+response.data);
-                                
+
                                 //window.location.href='/#/dashboard/dashboard';
                           },function(response){
-                            
+
                           });
             };
 
@@ -745,7 +764,7 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
         function() {}
     ]).controller("sparklineCtrl", ["$scope","getSearchAdCountService",
         function($scope,getSearchAdCountService) {
-             
+
            // $scope.simpleChart2info ={};
 
            $scope.count = getSearchAdCountService.getAdsWithCount();
@@ -764,10 +783,10 @@ angular.module("app.chart.ctrls", []).controller("chartingCtrl", ["$scope",
             return $scope.simpleChart2info;
         }
     ]);
-           
 
 
-    
+
+
 
 
 
@@ -1041,130 +1060,130 @@ angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter",
     function($scope, $filter) {
         var init;
         return $scope.stores = [{
-            name: "Nijiya Market",
-            price: "$$",
+            name: "HgCapital",
+            price: "Type2",
             sales: 292,
-            rating: 4
+            rating: 0.67
         }, {
-            name: "Eat On Monday Truck",
-            price: "$",
+            name: "RealVNC",
+            price: "Type3",
             sales: 119,
-            rating: 4.3
+            rating: 0.32
         }, {
-            name: "Tea Era",
-            price: "$",
+            name: "Smith",
+            price: "Type1",
             sales: 874,
-            rating: 4
+            rating: 0.47
         }, {
-            name: "Rogers Deli",
-            price: "$",
+            name: "Google",
+            price: "Type1",
             sales: 347,
-            rating: 4.2
+            rating: 0.70
         }, {
-            name: "MoBowl",
-            price: "$$$",
+            name: "Quarry",
+            price: "Type3",
             sales: 24,
-            rating: 4.6
+            rating: 0.48
         }, {
-            name: "The Milk Pail Market",
-            price: "$",
+            name: "Britania",
+            price: "Type4",
             sales: 543,
-            rating: 4.5
+            rating: 0.67
         }, {
-            name: "Nob Hill Foods",
-            price: "$$",
+            name: "Bee Craft",
+            price: "Type2",
             sales: 874,
-            rating: 4
+            rating: 0.54
         }, {
-            name: "Scratch",
-            price: "$$$",
+            name: "Fenners",
+            price: "Type3",
             sales: 643,
-            rating: 3.6
+            rating: 0.72
         }, {
             name: "Gochi Japanese Fusion Tapas",
-            price: "$$$",
+            price: "Type1",
             sales: 56,
-            rating: 4.1
+            rating: 0.83
         }, {
-            name: "Cost Plus World Market",
-            price: "$$",
+            name: "Boots UK",
+            price: "Type1",
             sales: 79,
-            rating: 4
+            rating: 0.92
         }, {
-            name: "Bumble Bee Health Foods",
-            price: "$$",
+            name: "Espares",
+            price: "Type4",
             sales: 43,
-            rating: 4.3
+            rating: 0.64
+        }, {
+            name: "Cambridge",
+            price: "Type3",
+            sales: 219,
+            rating: 0.59
         }, {
             name: "Costco",
-            price: "$$",
-            sales: 219,
-            rating: 3.6
-        }, {
-            name: "Red Rock Coffee Co",
-            price: "$",
+            price: "Type2",
             sales: 765,
-            rating: 4.1
+            rating: 0.79
         }, {
             name: "99 Ranch Market",
-            price: "$",
+            price: "Type3",
             sales: 181,
-            rating: 3.4
+            rating: 0.67
         }, {
             name: "Mi Pueblo Food Center",
-            price: "$",
+            price: "Type1",
             sales: 78,
-            rating: 4
+            rating: 0.86
         }, {
             name: "Cucina Venti",
-            price: "$$",
+            price: "Type2",
             sales: 163,
-            rating: 3.3
+            rating: 0.45
         }, {
             name: "Sufi Coffee Shop",
-            price: "$",
+            price: "Type4",
             sales: 113,
-            rating: 3.3
+            rating: 0.62
         }, {
             name: "Dana Street Roasting",
-            price: "$",
+            price: "Type2",
             sales: 316,
-            rating: 4.1
+            rating: 0.42
         }, {
             name: "Pearl Cafe",
-            price: "$",
+            price: "Type4",
             sales: 173,
-            rating: 3.4
+            rating: 0.39
         }, {
             name: "Posh Bagel",
-            price: "$",
+            price: "Type2",
             sales: 140,
-            rating: 4
+            rating: 0.68
         }, {
             name: "Artisan Wine Depot",
-            price: "$$",
+            price: "Type3",
             sales: 26,
-            rating: 4.1
+            rating: 0.58
         }, {
             name: "Hong Kong Chinese Bakery",
-            price: "$",
+            price: "Type3",
             sales: 182,
-            rating: 3.4
+            rating: 0.88
         }, {
             name: "Starbucks",
-            price: "$$",
+            price: "Type1",
             sales: 97,
-            rating: 3.7
+            rating: 0.59
         }, {
             name: "Tapioca Express",
-            price: "$",
+            price: "Type2",
             sales: 301,
-            rating: 3
+            rating: 0.30
         }, {
             name: "House of Bagels",
-            price: "$",
+            price: "Type4",
             sales: 82,
-            rating: 4.4
+            rating: 0.41
         }], $scope.searchKeywords = "", $scope.filteredStores = [], $scope.row = "", $scope.select = function(page) {
             var end, start;
             return start = (page - 1) * $scope.numPerPage, end = start + $scope.numPerPage, $scope.currentPageStores = $scope.filteredStores.slice(start, end);
@@ -1432,4 +1451,3 @@ angular.module("app.ui.ctrls", []).controller("NotifyCtrl", ["$scope", "loggit",
         };
     }
 ]);
-

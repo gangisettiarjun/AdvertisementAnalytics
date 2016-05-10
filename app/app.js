@@ -34,9 +34,9 @@ var app = angular.module("app", ["ngRoute", "ngAnimate", "ui.bootstrap", "easypi
                         return getImpVsClicks.promise;
                     },
 
-                    'getCTR' : function(getCTRService){
-                        return getCTRService.promise;
-                    },
+                    // 'getCTR' : function(getCTRService){
+                    //     return getCTRService.promise;
+                    // },
 
                     'getPopularAds' : function(getPopularAdsService){
                         return getPopularAdsService.promise;
