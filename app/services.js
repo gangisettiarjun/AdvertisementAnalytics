@@ -48,22 +48,27 @@ angular.module("app.ui.services", []).factory("loggit", [
         //     getCTR: function() {
         //         return finalData;
         //     }
-           
+
         // };
 
         var ctr='';
+        var isClicked='';
+
+        var finalResult={
+          "ctr" : '',
+          "result": ''
+        };
 
         return {
 
-        setCTR : function(myCTR){
-            ctr=myCTR;
+        setResult : function(myCTR,myIsClicked){
+            finalResult.ctr=myCTR;
+            finalResult.isClicked=myIsClicked;
         },
 
-        getCTR : function(){
-            return ctr;
-        }
-
-
+        getResult : function(){
+            return finalResult;
+        },
 
         };
 
@@ -74,16 +79,16 @@ angular.module("app.ui.services", []).factory("loggit", [
 
         var popularAds = {};
 
-        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){ 
+        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){
                 popularAds=data;
-                
+
         });
         return  {
             promise : promise,
             getPopularAds : function(){
                 return popularAds;
             }
-           
+
         };
 
     }
@@ -95,7 +100,7 @@ angular.module("app.ui.services", []).factory("loggit", [
 
         var promise = $http.get('http://localhost:5353/getSearchAdCount').success(function(data){
 
-                
+
                 console.log(data);
                 resultdata.count1=data[0].count;
                 resultdata.searchText1=data[0].searchKeyText;
@@ -105,14 +110,14 @@ angular.module("app.ui.services", []).factory("loggit", [
                 resultdata.searchText3=data[2].searchKeyText;
                 resultdata.count4=data[3].count;
                 resultdata.searchText4=data[3].searchKeyText;
-            
+
         });
         return  {
             promise : promise,
             getAdsWithCount: function() {
                 return resultdata;
             }
-           
+
         };
 
     }
@@ -136,7 +141,7 @@ angular.module("app.ui.services", []).factory("loggit", [
             getData2: function(){
                 return data2;
             }
-           
+
         };
     }
 ]).service("getMonthData",["$http",
@@ -162,14 +167,34 @@ angular.module("app.ui.services", []).factory("loggit", [
             getData2: function(){
                 return data2;
             }
-           
+
+        };
+    }
+
+
+
+]).service("populateTable",["$http",
+
+    function($http) {
+
+        var table=[];
+
+
+        return {
+
+        setTable : function(myTable){
+            table=myTable.data;
+            console.log("The table is");
+            console.log(table);
+        },
+
+        getTable : function(){
+            return table;
+        },
+
         };
     }
 
 
 
 ]);
-
-
-
-

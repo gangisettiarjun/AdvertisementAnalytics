@@ -3,21 +3,29 @@
 <head>
 	<title>Results</title>
 </head>
-<body>  
+<body>
     <header class="page-main-header" data-ng-controller="DashboardCtrl">
         <div class="row">
-            <div class="col-sm-12 text-center click-thru-rate">
+            <div class="col-sm-6 text-center click-thru-rate">
                 <h4>
-                    Click-Through Rate
+                    Click-Worthiness
                 </h4>
                 <p>
                     {{ctr}}
                 </p>
-            </div>      
+            </div>
+						<div class="col-sm-6 text-center click-thru-rate">
+                <h4>
+                    IsClicked?
+                </h4>
+                <p>
+                    {{isClicked}}
+                </p>
+            </div>
         </div>
     </header>
 
-    <div data-ng-app="app.controllers" data-ng-controller="ResultsCtrl">   
+    <div data-ng-app="app.controllers" data-ng-controller="ResultsCtrl">
         <div class="page page-table" data-ng-controller="tableCtrl">
 
             <section class="panel panel-default table-dynamic">
@@ -36,8 +44,8 @@
                         </div>
                         <div class="col-sm-3 col-xs-6 filter-result-info">
                             <span>
-                                Showing {{filteredStores.length}}/{{stores.length}} entries
-                            </span>              
+                                Showing {{filteredStores.length}}/{{currentTable.length}} entries
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -55,7 +63,7 @@
                                       data-ng-class="{active: row == '-name'}"></span>
                             </div></th>
                             <th><div class="th">
-                                Ad Type
+                                Ad Display Position
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('price') "
                                       data-ng-class="{active: row == 'price'}"></span>
@@ -64,7 +72,7 @@
                                       data-ng-class="{active: row == '-price'}"></span>
                             </div></th>
                             <th><div class="th">
-                                Visited Count(in 30 days)
+                                Is Clicked
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('sales') "
                                       data-ng-class="{active: row == 'sales'}"></span>
@@ -73,7 +81,7 @@
                                       data-ng-class="{active: row == '-sales'}"></span>
                             </div></th>
                             <th><div class="th">
-                                CTR
+                                Search Location
                                 <span class="glyphicon glyphicon-chevron-up"
                                       data-ng-click=" order('rating') "
                                       data-ng-class="{active: row == 'rating'}"></span>
@@ -84,11 +92,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-ng-repeat="store in currentPageStores">
-                            <td>{{store.name}}</td>
-                            <td>{{store.price}}</td>
-                            <td>{{store.sales}}</td>
-                            <td>{{store.rating}}</td>
+                        <tr data-ng-repeat="result in currentPageStores">
+                            <td>{{result.Ad_Title}}</td>
+														<td>{{result.Ad_Display_Position}}</td>
+														<td>{{result.Is_Clicked}}</td>
+														<td>{{result.Search_Location}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -97,11 +105,11 @@
                     <div class="row">
                         <div class="col-md-6 page-num-info">
                             <span>
-                                Show 
+                                Show
                                 <select data-ng-model="numPerPage"
                                         data-ng-options="num for num in numPerPageOpt"
                                         data-ng-change="onNumPerPageChange()">
-                                </select> 
+                                </select>
                                 entries per page
                             </span>
                         </div>

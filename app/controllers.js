@@ -30,15 +30,17 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
     ]).controller("DashboardCtrl", ["$scope","$http","getCTRResult",
         function($scope,$http,getCTRResult) {
 
-            var ctr = getCTRResult.getCTR();
+
+            var myResult = getCTRResult.getResult();
             console.log("in Dashboard");
-            console.log(ctr);
-            $scope.ctr=ctr.toFixed(2);
+            console.log(myResult.ctr);
+            $scope.ctr=myResult.ctr.toFixed(2);
+            $scope.isClicked=myResult.isClicked;
 
         }
-    ]).controller("PredictDataCtrl", ["$scope","$http","getCTRResult",
+    ]).controller("PredictDataCtrl", ["$scope","$http","getCTRResult","populateTable",
 
-        function($scope,$http,getCTRResult){
+        function($scope,$http,getCTRResult,populateTable){
 
                  $scope.ctr='';
                  $scope.isPredicting=false;
@@ -47,7 +49,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                         $scope.isPredicting=true;
 
-                        var customerinfo = {
+                        var predictionInfo = {
                             "Ad_Title" : '',
                             "Ad_Display_Position"  : '',
                             "Ad_Type": '',
@@ -58,17 +60,49 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                             "Device_Type":''
                         };
 
+                        var adInfo = {
+                            "Ad_Title" : '',
+                            "Ad_Description": '',
+                            "Ad_Display_Position"  : '',
+                            "Ad_Type": '',
+                            "Search_Key_Text": '',
+                            "Search_Location":'',
+                            "Linking_Site_URL":'',
+                            "Parent_Site_URL":'',
+                            "Device_Type":'',
+                            "Ad_url": ''
+                        };
+
 
                         console.log("clicked");
 
-                        customerinfo.Ad_Title=$scope.adtitle;
-                        customerinfo.Ad_Display_Position=$scope.Ad_Display_Position;
-                        customerinfo.Ad_Type=$scope.Ad_Type;
-                        customerinfo.Search_Key_Text=$scope.Search_Key_Text;
-                        customerinfo.Search_Location=$scope.Search_Location;
-                        customerinfo.Linking_Site_URL=$scope.Linking_Site_URL;
-                        customerinfo.Parent_Site_URL=$scope.Parent_Site_URL;
-                        customerinfo.Device_Type=$scope.Device_Type;
+                        adInfo.Ad_Description=$scope.Ad_Description;
+                        adInfo.Ad_url=$scope.Ad_URL;
+
+                        predictionInfo.Ad_Title=$scope.adtitle;
+                        adInfo.Ad_Title=$scope.adtitle;
+
+                        predictionInfo.Ad_Display_Position=$scope.Ad_Display_Position;
+                        adInfo.Ad_Display_Position=$scope.Ad_Display_Position;
+
+                        predictionInfo.Ad_Type=$scope.Ad_Type;
+                        adInfo.Ad_Type=$scope.Ad_Type;
+
+                        predictionInfo.Search_Key_Text=$scope.Search_Key_Text;
+                        adInfo.Search_Key_Text=$scope.Search_Key_Text;
+
+                        predictionInfo.Search_Location=$scope.Search_Location;
+                        adInfo.Search_Location=$scope.Search_Location;
+
+                        predictionInfo.Linking_Site_URL=$scope.Linking_Site_URL;
+                        adInfo.Linking_Site_URL=$scope.Linking_Site_URL;
+
+                        predictionInfo.Parent_Site_URL=$scope.Parent_Site_URL;
+                        adInfo.Parent_Site_URL=$scope.Parent_Site_URL;
+
+                        predictionInfo.Device_Type=$scope.Device_Type;
+                        adInfo.Device_Type=$scope.Device_Type;
+                        //customerinfo.Ad_url=$scope.Ad_URL;
 
                         // var myjson = {
                         //     "Ad_Title": "Super Creative",
@@ -91,7 +125,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
                                                 headers: {
                                                   'Content-Type': 'application/json'
                                                 },
-                                                data: customerinfo
+                                                data: predictionInfo
                                             };
 
                         var res =   $http(req).
@@ -99,11 +133,29 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
 
                                         $scope.ctr=response.data.CTR_Probability;
                                         console.log($scope.ctr);
-                                        getCTRResult.setCTR(response.data.CTR_Probability);
-                                        window.location.href='/#/results';
+                                        getCTRResult.setResult(response.data.CTR_Probability,response.data.Click_Prediction);
+                                        adInfo.Click_Prediction=response.data.Click_Prediction;
+                                        console.log("Adinfo");
+                                        console.log(adInfo);
 
+                                        var nodeReq = {
+                                                     method: 'POST',
+                                                     url: 'http://127.0.0.1:5353/getAdInfo',
+                                                     headers: {
+                                                       'Content-Type': 'application/json'
+                                                     },
+                                                     data: adInfo
+                                                 };
 
-                                  },function(response){
+                                                 var resultFinal =   $http(nodeReq).
+                                                     then(function(finalResponse) {
+                                                       //
+
+                                                       populateTable.setTable(finalResponse);
+                                                       console.log("Final Repsone");
+                                                       window.location.href='/#/results';
+                                                       //console.log(finalResponse);
+                                                     });
 
                                   });
                     };
@@ -1056,135 +1108,23 @@ angular.module("app.ui.form.ctrls", []).controller("TagsDemoCtrl", ["$scope",
  Controller for dynamic and other tables
  */
 
-angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter",
-    function($scope, $filter) {
+angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter","populateTable",
+    function($scope, $filter,populateTable) {
         var init;
-        return $scope.stores = [{
-            name: "HgCapital",
-            price: "Type2",
-            sales: 292,
-            rating: 0.67
-        }, {
-            name: "RealVNC",
-            price: "Type3",
-            sales: 119,
-            rating: 0.32
-        }, {
-            name: "Smith",
-            price: "Type1",
-            sales: 874,
-            rating: 0.47
-        }, {
-            name: "Google",
-            price: "Type1",
-            sales: 347,
-            rating: 0.70
-        }, {
-            name: "Quarry",
-            price: "Type3",
-            sales: 24,
-            rating: 0.48
-        }, {
-            name: "Britania",
-            price: "Type4",
-            sales: 543,
-            rating: 0.67
-        }, {
-            name: "Bee Craft",
-            price: "Type2",
-            sales: 874,
-            rating: 0.54
-        }, {
-            name: "Fenners",
-            price: "Type3",
-            sales: 643,
-            rating: 0.72
-        }, {
-            name: "Gochi Japanese Fusion Tapas",
-            price: "Type1",
-            sales: 56,
-            rating: 0.83
-        }, {
-            name: "Boots UK",
-            price: "Type1",
-            sales: 79,
-            rating: 0.92
-        }, {
-            name: "Espares",
-            price: "Type4",
-            sales: 43,
-            rating: 0.64
-        }, {
-            name: "Cambridge",
-            price: "Type3",
-            sales: 219,
-            rating: 0.59
-        }, {
-            name: "Costco",
-            price: "Type2",
-            sales: 765,
-            rating: 0.79
-        }, {
-            name: "99 Ranch Market",
-            price: "Type3",
-            sales: 181,
-            rating: 0.67
-        }, {
-            name: "Mi Pueblo Food Center",
-            price: "Type1",
-            sales: 78,
-            rating: 0.86
-        }, {
-            name: "Cucina Venti",
-            price: "Type2",
-            sales: 163,
-            rating: 0.45
-        }, {
-            name: "Sufi Coffee Shop",
-            price: "Type4",
-            sales: 113,
-            rating: 0.62
-        }, {
-            name: "Dana Street Roasting",
-            price: "Type2",
-            sales: 316,
-            rating: 0.42
-        }, {
-            name: "Pearl Cafe",
-            price: "Type4",
-            sales: 173,
-            rating: 0.39
-        }, {
-            name: "Posh Bagel",
-            price: "Type2",
-            sales: 140,
-            rating: 0.68
-        }, {
-            name: "Artisan Wine Depot",
-            price: "Type3",
-            sales: 26,
-            rating: 0.58
-        }, {
-            name: "Hong Kong Chinese Bakery",
-            price: "Type3",
-            sales: 182,
-            rating: 0.88
-        }, {
-            name: "Starbucks",
-            price: "Type1",
-            sales: 97,
-            rating: 0.59
-        }, {
-            name: "Tapioca Express",
-            price: "Type2",
-            sales: 301,
-            rating: 0.30
-        }, {
-            name: "House of Bagels",
-            price: "Type4",
-            sales: 82,
-            rating: 0.41
-        }], $scope.searchKeywords = "", $scope.filteredStores = [], $scope.row = "", $scope.select = function(page) {
+        var currentTable=populateTable.getTable();
+
+
+
+        for(var i=0;i<currentTable.length;i++){
+          delete currentTable[i].Linking_Site_URL;
+          delete currentTable[i].Parent_Site_URL;
+          delete currentTable[i].Ad_Type;
+          delete currentTable[i].Device_Type;
+        }
+
+        console.log(currentTable);
+
+        return $scope.resultTable = currentTable, $scope.searchKeywords = "", $scope.filteredStores = [], $scope.row = "", $scope.select = function(page) {
             var end, start;
             return start = (page - 1) * $scope.numPerPage, end = start + $scope.numPerPage, $scope.currentPageStores = $scope.filteredStores.slice(start, end);
         }, $scope.onFilterChange = function() {
@@ -1194,10 +1134,10 @@ angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter",
         }, $scope.onOrderChange = function() {
             return $scope.select(1), $scope.currentPage = 1;
         }, $scope.search = function() {
-            return $scope.filteredStores = $filter("filter")($scope.stores, $scope.searchKeywords), $scope.onFilterChange();
+            return $scope.filteredStores = $filter("filter")($scope.resultTable, $scope.searchKeywords), $scope.onFilterChange();
         }, $scope.order = function(rowName) {
-            return $scope.row !== rowName ? ($scope.row = rowName, $scope.filteredStores = $filter("orderBy")($scope.stores, rowName), $scope.onOrderChange()) : void 0;
-        }, $scope.numPerPageOpt = [3, 5, 10, 20], $scope.numPerPage = $scope.numPerPageOpt[2], $scope.currentPage = 1, $scope.currentPageStores = [], (init = function() {
+            return $scope.row !== rowName ? ($scope.row = rowName, $scope.filteredStores = $filter("orderBy")($scope.resultTable, rowName), $scope.onOrderChange()) : void 0;
+        }, $scope.numPerPageOpt = [3, 5, 20, 30], $scope.numPerPage = $scope.numPerPageOpt[2], $scope.currentPage = 1, $scope.currentPageStores = [], (init = function() {
             return $scope.search(), $scope.select($scope.currentPage);
         }), $scope.search();
     }

@@ -21,6 +21,7 @@
     "karma-jasmine": "~0.1.0"
   },
   "dependencies": {
-    "mysql": "^2.10.2"
+    "mysql": "^2.10.2",
+    "promise": "^7.1.1"
   }
 }

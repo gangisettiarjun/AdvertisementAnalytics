@@ -7,11 +7,11 @@
 
 
     .run-btn{
-    height:100%; 
-    width:130px; 
-    margin: -20px -50px; 
+    height:100%;
+    width:130px;
+    margin: -20px -50px;
     position:relative;
-    top:50%; 
+    top:50%;
     left:50%;
     }
 
@@ -28,13 +28,21 @@
                         <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>Predict Ads Form</strong></div>
                             <div class="panel-body">
                                 <form class="form-horizontal" role="form">
-                                    
+
                                     <div class="form-group">
                                         <label for="adtitle" class="col-sm-2 control-label">Ad Title</label>
                                         <div class="col-sm-10">
                                             <input type="text" class="form-control" id="adtitle" ng-model="adtitle" placeholder="Please Enter Your Ad Title">
                                         </div>
                                     </div>
+
+																		<div class="form-group">
+                                        <label for="Ad_Description" class="col-sm-2 control-label">Ad Description</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="Ad_Description" ng-model="Ad_Description" placeholder="Please Enter Ad Description">
+                                        </div>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="Ad_Display_Position" class="col-sm-2 control-label">Ad Display Position</label>
                                         <div class="col-sm-10">
@@ -47,7 +55,7 @@
                                             <input type="text" class="form-control" id="Ad_Type" ng-model="Ad_Type" placeholder="Please Enter Your Ad Type">
                                         </div>
                                     </div>
-                                
+
                                     <div class="form-group">
                                         <label for="Search_Key_Text" class="col-sm-2 control-label">Search Keyword</label>
                                         <div class="col-sm-10">
@@ -79,20 +87,29 @@
                                         </div>
                                     </div>
 
-                                    <div>  
-                                    <br>                  
-                                        <button type="submit" class="btn btn-success run-btn" data-ng-click = "sendPredictData()">Run</button>                
+																		<div class="form-group">
+                                        <label for="Ad_URL" class="col-sm-2 control-label">Ad URL</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control" id="Ad_URL" ng-model="Ad_URL" placeholder="Please Enter Your Ad URL">
+                                        </div>
+                                    </div>
+
+
+
+                                    <div>
+                                    <br>
+                                        <button type="submit" class="btn btn-success run-btn" data-ng-click = "sendPredictData()">Run</button>
                                     </div>
                                     <br><br>
-                                </form>  
-                            
+                                </form>
+
                             </div>
                     </section>
                 </div>
                 <div class="col-md-2"></div>
             </div>
         </div>
-    
+
         <div class="row loading-predict" ng-show="isPredicting == true">
         <div class="load_circle_wrapper predict-spinner">
             <h4><strong>Prediction on the way, Please Wait...</strong></h4></div>
@@ -105,25 +122,25 @@
             </div>
         </div>
 
-        
-       
+
+
 
         <div class="row">
             <div class="page page-icons">
 
                 <div class="col-md-2"></div>
                 <div class="col-md-8">
-                    <section class="panel panel-default"> 
-                    <form class="form-horizontal" role="form">               
+                    <section class="panel panel-default">
+                    <form class="form-horizontal" role="form">
                         <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>File upload with Drag and Drop</strong></div>
                         <div class="panel-body">
                             <div>
                                 <div class="drop-box">Drag and drop files here</div>
                             </div>
                         </div>
-                        <div>  
-                        <br>                  
-                            <button type="submit" class="btn btn-success run-btn">Upload and Run</button>                
+                        <div>
+                        <br>
+                            <button type="submit" class="btn btn-success run-btn">Upload and Run</button>
                         </div>
                         <br><br>
                     </form>

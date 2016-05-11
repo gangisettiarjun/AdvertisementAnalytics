@@ -1,0 +1,3227 @@
+diff --git a/app/controllers.js b/app/controllers.js
+index 5f23411..f4ba61d 100755
+--- a/app/controllers.js
++++ b/app/controllers.js
+@@ -30,10 +30,12 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
+     ]).controller("DashboardCtrl", ["$scope","$http","getCTRResult",
+         function($scope,$http,getCTRResult) {
+ 
+-            var ctr = getCTRResult.getCTR();
++
++            var myResult = getCTRResult.getResult();
+             console.log("in Dashboard");
+-            console.log(ctr);
+-            $scope.ctr=ctr.toFixed(2);
++            console.log(myResult.ctr);
++            $scope.ctr=myResult.ctr.toFixed(2);
++            $scope.isClicked=myResult.isClicked;
+ 
+         }
+     ]).controller("PredictDataCtrl", ["$scope","$http","getCTRResult",
+@@ -47,7 +49,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
+ 
+                         $scope.isPredicting=true;
+ 
+-                        var customerinfo = {
++                        var predictionInfo = {
+                             "Ad_Title" : '',
+                             "Ad_Display_Position"  : '',
+                             "Ad_Type": '',
+@@ -58,17 +60,49 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
+                             "Device_Type":''
+                         };
+ 
++                        var adInfo = {
++                            "Ad_Title" : '',
++                            "Ad_Description": '',
++                            "Ad_Display_Position"  : '',
++                            "Ad_Type": '',
++                            "Search_Key_Text": '',
++                            "Search_Location":'',
++                            "Linking_Site_URL":'',
++                            "Parent_Site_URL":'',
++                            "Device_Type":'',
++                            "Ad_url": ''
++                        };
++
+ 
+                         console.log("clicked");
+ 
+-                        customerinfo.Ad_Title=$scope.adtitle;
+-                        customerinfo.Ad_Display_Position=$scope.Ad_Display_Position;
+-                        customerinfo.Ad_Type=$scope.Ad_Type;
+-                        customerinfo.Search_Key_Text=$scope.Search_Key_Text;
+-                        customerinfo.Search_Location=$scope.Search_Location;
+-                        customerinfo.Linking_Site_URL=$scope.Linking_Site_URL;
+-                        customerinfo.Parent_Site_URL=$scope.Parent_Site_URL;
+-                        customerinfo.Device_Type=$scope.Device_Type;
++                        adInfo.Ad_Description=$scope.Ad_Description;
++                        adInfo.Ad_url=$scope.Ad_URL;
++
++                        predictionInfo.Ad_Title=$scope.adtitle;
++                        adInfo.Ad_Title=$scope.adtitle;
++
++                        predictionInfo.Ad_Display_Position=$scope.Ad_Display_Position;
++                        adInfo.Ad_Display_Position=$scope.Ad_Display_Position;
++
++                        predictionInfo.Ad_Type=$scope.Ad_Type;
++                        adInfo.Ad_Type=$scope.Ad_Type;
++
++                        predictionInfo.Search_Key_Text=$scope.Search_Key_Text;
++                        adInfo.Search_Key_Text=$scope.Search_Key_Text;
++
++                        predictionInfo.Search_Location=$scope.Search_Location;
++                        adInfo.Search_Location=$scope.Search_Location;
++
++                        predictionInfo.Linking_Site_URL=$scope.Linking_Site_URL;
++                        adInfo.Linking_Site_URL=$scope.Linking_Site_URL;
++
++                        predictionInfo.Parent_Site_URL=$scope.Parent_Site_URL;
++                        adInfo.Parent_Site_URL=$scope.Parent_Site_URL;
++
++                        predictionInfo.Device_Type=$scope.Device_Type;
++                        adInfo.Device_Type=$scope.Device_Type;
++                        //customerinfo.Ad_url=$scope.Ad_URL;
+ 
+                         // var myjson = {
+                         //     "Ad_Title": "Super Creative",
+@@ -91,7 +125,7 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
+                                                 headers: {
+                                                   'Content-Type': 'application/json'
+                                                 },
+-                                                data: customerinfo
++                                                data: predictionInfo
+                                             };
+ 
+                         var res =   $http(req).
+@@ -99,11 +133,26 @@ angular.module("app.controllers", []).controller("AdminAppCtrl", ["$scope", "$lo
+ 
+                                         $scope.ctr=response.data.CTR_Probability;
+                                         console.log($scope.ctr);
+-                                        getCTRResult.setCTR(response.data.CTR_Probability);
+-                                        window.location.href='/#/results';
+-
+-
+-                                  },function(response){
++                                        getCTRResult.setResult(response.data.CTR_Probability,response.data.Click_Prediction);
++                                        adInfo.Click_Prediction=response.data.Click_Prediction;
++                                        console.log("Adinfo");
++                                        console.log(adInfo);
++
++                                        var nodeReq = {
++                                                     method: 'POST',
++                                                     url: 'http://127.0.0.1:5353/getAdInfo',
++                                                     headers: {
++                                                       'Content-Type': 'application/json'
++                                                     },
++                                                     data: adInfo
++                                                 };
++
++                                                 var resultFinal =   $http(nodeReq).
++                                                     then(function(finalResponse) {
++                                                       //window.location.href='/#/results';
++                                                       console.log("Final Repsone");
++                                                       console.log(finalResponse);
++                                                     });
+ 
+                                   });
+                     };
+@@ -1056,8 +1105,8 @@ angular.module("app.ui.form.ctrls", []).controller("TagsDemoCtrl", ["$scope",
+  Controller for dynamic and other tables
+  */
+ 
+-angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter",
+-    function($scope, $filter) {
++angular.module("app.tables", []).controller("tableCtrl", ["$scope", "$filter","populateTable",
++    function($scope, $filter,populateTable) {
+         var init;
+         return $scope.stores = [{
+             name: "HgCapital",
+diff --git a/app/services.js b/app/services.js
+index b31ccfe..04c4ed1 100755
+--- a/app/services.js
++++ b/app/services.js
+@@ -48,22 +48,27 @@ angular.module("app.ui.services", []).factory("loggit", [
+         //     getCTR: function() {
+         //         return finalData;
+         //     }
+-           
++
+         // };
+ 
+         var ctr='';
++        var isClicked='';
++
++        var finalResult={
++          "ctr" : '',
++          "result": ''
++        };
+ 
+         return {
+ 
+-        setCTR : function(myCTR){
+-            ctr=myCTR;
++        setResult : function(myCTR,myIsClicked){
++            finalResult.ctr=myCTR;
++            finalResult.isClicked=myIsClicked;
+         },
+ 
+-        getCTR : function(){
+-            return ctr;
+-        }
+-
+-
++        getResult : function(){
++            return finalResult;
++        },
+ 
+         };
+ 
+@@ -74,16 +79,16 @@ angular.module("app.ui.services", []).factory("loggit", [
+ 
+         var popularAds = {};
+ 
+-        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){ 
++        var promise = $http.get('http://localhost:5353/getPopularAds').success(function(data){
+                 popularAds=data;
+-                
++
+         });
+         return  {
+             promise : promise,
+             getPopularAds : function(){
+                 return popularAds;
+             }
+-           
++
+         };
+ 
+     }
+@@ -95,7 +100,7 @@ angular.module("app.ui.services", []).factory("loggit", [
+ 
+         var promise = $http.get('http://localhost:5353/getSearchAdCount').success(function(data){
+ 
+-                
++
+                 console.log(data);
+                 resultdata.count1=data[0].count;
+                 resultdata.searchText1=data[0].searchKeyText;
+@@ -105,14 +110,14 @@ angular.module("app.ui.services", []).factory("loggit", [
+                 resultdata.searchText3=data[2].searchKeyText;
+                 resultdata.count4=data[3].count;
+                 resultdata.searchText4=data[3].searchKeyText;
+-            
++
+         });
+         return  {
+             promise : promise,
+             getAdsWithCount: function() {
+                 return resultdata;
+             }
+-           
++
+         };
+ 
+     }
+@@ -136,7 +141,7 @@ angular.module("app.ui.services", []).factory("loggit", [
+             getData2: function(){
+                 return data2;
+             }
+-           
++
+         };
+     }
+ ]).service("getMonthData",["$http",
+@@ -162,14 +167,32 @@ angular.module("app.ui.services", []).factory("loggit", [
+             getData2: function(){
+                 return data2;
+             }
+-           
++
+         };
+     }
+ 
+ 
+ 
+-]);
++]).service("populateTable",["$http",
+ 
++    function($http) {
++
++        var table=[];
+ 
+ 
++        return {
++
++        setTable : function(myTable){
++            table=myTable;
++        },
++
++        getTable : function(){
++            return table;
++        },
+ 
++        };
++    }
++
++
++
++]);
+diff --git a/app/views/predictor.html b/app/views/predictor.html
+index ee569ca..2c0204c 100644
+--- a/app/views/predictor.html
++++ b/app/views/predictor.html
+@@ -7,11 +7,11 @@
+ 
+ 
+     .run-btn{
+-    height:100%; 
+-    width:130px; 
+-    margin: -20px -50px; 
++    height:100%;
++    width:130px;
++    margin: -20px -50px;
+     position:relative;
+-    top:50%; 
++    top:50%;
+     left:50%;
+     }
+ 
+@@ -28,13 +28,21 @@
+                         <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>Predict Ads Form</strong></div>
+                             <div class="panel-body">
+                                 <form class="form-horizontal" role="form">
+-                                    
++
+                                     <div class="form-group">
+                                         <label for="adtitle" class="col-sm-2 control-label">Ad Title</label>
+                                         <div class="col-sm-10">
+                                             <input type="text" class="form-control" id="adtitle" ng-model="adtitle" placeholder="Please Enter Your Ad Title">
+                                         </div>
+                                     </div>
++
++																		<div class="form-group">
++                                        <label for="Ad_Description" class="col-sm-2 control-label">Ad Description</label>
++                                        <div class="col-sm-10">
++                                            <input type="text" class="form-control" id="Ad_Description" ng-model="Ad_Description" placeholder="Please Enter Ad Description">
++                                        </div>
++                                    </div>
++
+                                     <div class="form-group">
+                                         <label for="Ad_Display_Position" class="col-sm-2 control-label">Ad Display Position</label>
+                                         <div class="col-sm-10">
+@@ -47,7 +55,7 @@
+                                             <input type="text" class="form-control" id="Ad_Type" ng-model="Ad_Type" placeholder="Please Enter Your Ad Type">
+                                         </div>
+                                     </div>
+-                                
++
+                                     <div class="form-group">
+                                         <label for="Search_Key_Text" class="col-sm-2 control-label">Search Keyword</label>
+                                         <div class="col-sm-10">
+@@ -79,20 +87,29 @@
+                                         </div>
+                                     </div>
+ 
+-                                    <div>  
+-                                    <br>                  
+-                                        <button type="submit" class="btn btn-success run-btn" data-ng-click = "sendPredictData()">Run</button>                
++																		<div class="form-group">
++                                        <label for="Ad_URL" class="col-sm-2 control-label">Ad URL</label>
++                                        <div class="col-sm-10">
++                                            <input type="text" class="form-control" id="Ad_URL" ng-model="Ad_URL" placeholder="Please Enter Your Ad URL">
++                                        </div>
++                                    </div>
++
++
++
++                                    <div>
++                                    <br>
++                                        <button type="submit" class="btn btn-success run-btn" data-ng-click = "sendPredictData()">Run</button>
+                                     </div>
+                                     <br><br>
+-                                </form>  
+-                            
++                                </form>
++
+                             </div>
+                     </section>
+                 </div>
+                 <div class="col-md-2"></div>
+             </div>
+         </div>
+-    
++
+         <div class="row loading-predict" ng-show="isPredicting == true">
+         <div class="load_circle_wrapper predict-spinner">
+             <h4><strong>Prediction on the way, Please Wait...</strong></h4></div>
+@@ -105,25 +122,25 @@
+             </div>
+         </div>
+ 
+-        
+-       
++
++
+ 
+         <div class="row">
+             <div class="page page-icons">
+ 
+                 <div class="col-md-2"></div>
+                 <div class="col-md-8">
+-                    <section class="panel panel-default"> 
+-                    <form class="form-horizontal" role="form">               
++                    <section class="panel panel-default">
++                    <form class="form-horizontal" role="form">
+                         <div class="panel-heading"><strong><i class="fa fa-list panel-ico"></i>File upload with Drag and Drop</strong></div>
+                         <div class="panel-body">
+                             <div>
+                                 <div class="drop-box">Drag and drop files here</div>
+                             </div>
+                         </div>
+-                        <div>  
+-                        <br>                  
+-                            <button type="submit" class="btn btn-success run-btn">Upload and Run</button>                
++                        <div>
++                        <br>
++                            <button type="submit" class="btn btn-success run-btn">Upload and Run</button>
+                         </div>
+                         <br><br>
+                     </form>
+diff --git a/app/views/results.html b/app/views/results.html
+index ec2638d..ae2c01a 100644
+--- a/app/views/results.html
++++ b/app/views/results.html
+@@ -3,21 +3,29 @@
+ <head>
+ 	<title>Results</title>
+ </head>
+-<body>  
++<body>
+     <header class="page-main-header" data-ng-controller="DashboardCtrl">
+         <div class="row">
+-            <div class="col-sm-12 text-center click-thru-rate">
++            <div class="col-sm-6 text-center click-thru-rate">
+                 <h4>
+-                    Click-Through Rate
++                    Click-Worthiness
+                 </h4>
+                 <p>
+                     {{ctr}}
+                 </p>
+-            </div>      
++            </div>
++						<div class="col-sm-6 text-center click-thru-rate">
++                <h4>
++                    IsClicked?
++                </h4>
++                <p>
++                    {{isClicked}}
++                </p>
++            </div>
+         </div>
+     </header>
+ 
+-    <div data-ng-app="app.controllers" data-ng-controller="ResultsCtrl">   
++    <div data-ng-app="app.controllers" data-ng-controller="ResultsCtrl">
+         <div class="page page-table" data-ng-controller="tableCtrl">
+ 
+             <section class="panel panel-default table-dynamic">
+@@ -37,7 +45,7 @@
+                         <div class="col-sm-3 col-xs-6 filter-result-info">
+                             <span>
+                                 Showing {{filteredStores.length}}/{{stores.length}} entries
+-                            </span>              
++                            </span>
+                         </div>
+                     </div>
+                 </div>
+@@ -97,11 +105,11 @@
+                     <div class="row">
+                         <div class="col-md-6 page-num-info">
+                             <span>
+-                                Show 
++                                Show
+                                 <select data-ng-model="numPerPage"
+                                         data-ng-options="num for num in numPerPageOpt"
+                                         data-ng-change="onNumPerPageChange()">
+-                                </select> 
++                                </select>
+                                 entries per page
+                             </span>
+                         </div>
+diff --git a/dbqueries/dbqueries.json b/dbqueries/dbqueries.json
+index d542e67..30d7c56 100644
+--- a/dbqueries/dbqueries.json
++++ b/dbqueries/dbqueries.json
+@@ -1,4 +1,4 @@
+-{	
++{
+ 	"adVsClicks" : "SELECT Count(Ad_Id) as Ad_Impressions, SUM(Is_Clicked) as Ads_Clicked, YEAR(Search_Time) as Search_Year FROM Ad_Impressions INNER JOIN Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id group by Search_Year having Search_Year > '2003' order by Search_Year;",
+ 
+ 	"popularads" : "SELECT Ad_Key_Text FROM Ad_Keywords_Combo INNER JOIN Ad_Keywords WHERE Ad_Keywords_Combo.Ad_Key_Id = Ad_Keywords.Ad_Key_Id GROUP BY Ad_Key_Text ORDER BY Ad_Id DESC LIMIT 8;",
+@@ -8,5 +8,29 @@
+ 	"trendingAds"  : {
+ 		"currentMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 8 AND YEAR(Search_Time) = 2009 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;",
+ 		"pastMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 11 AND YEAR(Search_Time) = 2010 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;"
+-	}
++	},
++
++	"SearchInfo" : "INSERT INTO Search_Information (Search_Time, Linking_Site_URL, Search_Location, Device_Type) VALUES ",
++
++	"Search_Keywords" : "INSERT INTO Search_Keywords (Search_Key_Text) VALUES",
++
++	"Search_Key_Id": "SELECT Search_Key_Id FROM Search_Keywords ORDER BY Search_Key_Id DESC LIMIT 1;",
++
++	"Search_Id": "SELECT Search_Id FROM Search_Information ORDER BY Search_Id DESC LIMIT 1;",
++
++	"Search_Keywords_Combo": "INSERT INTO Search_Keywords_Combo (Search_Key_Id, Search_Id) VALUES",
++
++	"Ads_Information" : "INSERT INTO Ads_Information (Ad_Title, Ad_Description, Ad_URL, Ad_Type) VALUES",
++
++	"Ad_Keywords" : "INSERT INTO Ad_Keywords (Ad_Key_Text) VALUES",
++
++	"Ad_Key_Id": "SELECT Ad_Key_Id FROM Ad_Keywords ORDER BY Ad_Key_Id DESC LIMIT 1;",
++
++	"Ad_Id": "SELECT Ad_Id FROM Ads_Information ORDER BY Ad_Id DESC LIMIT 1;",
++
++	"Ad_Keywords_Combo": "INSERT INTO Ad_Keywords_Combo (Ad_Key_Id, Ad_Id) VALUES",
++
++	"Ad_Impressions": "INSERT INTO Ad_Impressions (Ad_Display_Position,Is_Clicked,Parent_Site_URL,Search_Id,Ad_Id) VALUES",
++
++	"HistoricalAds": "SELECT Ad_Title, Ad_Display_Position, Ad_Type, Search_Location, Linking_Site_URL, Parent_Site_URL, Device_Type, Is_Clicked FROM Ad_Impressions, Ads_Information, Search_Information WHERE Ad_Impressions.Ad_Id = Ads_Information.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id ORDER BY Ad_Impressions.Ad_Display_Position LIMIT 15;"
+ }
+diff --git a/node_modules/asap/LICENSE.md b/node_modules/asap/LICENSE.md
+index 5d98ad8..ba18c61 100644
+--- a/node_modules/asap/LICENSE.md
++++ b/node_modules/asap/LICENSE.md
+@@ -1,5 +1,6 @@
+ 
+-Copyright 2009–2013 Contributors. All rights reserved.
++Copyright 2009–2014 Contributors. All rights reserved.
++
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to
+ deal in the Software without restriction, including without limitation the
+diff --git a/node_modules/asap/README.md b/node_modules/asap/README.md
+index 9a42759..452fd8c 100644
+--- a/node_modules/asap/README.md
++++ b/node_modules/asap/README.md
+@@ -1,9 +1,14 @@
+-
+ # ASAP
+ 
+-This `asap` CommonJS package contains a single `asap` module that
+-exports a single `asap` function that executes a function **as soon as
+-possible**.
++[![Build Status](https://travis-ci.org/kriskowal/asap.png?branch=master)](https://travis-ci.org/kriskowal/asap)
++
++Promise and asynchronous observer libraries, as well as hand-rolled callback
++programs and libraries, often need a mechanism to postpone the execution of a
++callback until the next available event.
++(See [Designing API’s for Asynchrony][Zalgo].)
++The `asap` function executes a task **as soon as possible** but not before it
++returns, waiting only for the completion of the current event and previously
++scheduled tasks.
+ 
+ ```javascript
+ asap(function () {
+@@ -11,27 +16,54 @@ asap(function () {
+ });
+ ```
+ 
+-More formally, ASAP provides a fast event queue that will execute tasks
+-until it is empty before yielding to the JavaScript engine's underlying
+-event-loop.  When the event queue becomes non-empty, ASAP schedules a
+-flush event, preferring for that event to occur before the JavaScript
+-engine has an opportunity to perform IO tasks or rendering, thus making
+-the first task and subsequent tasks semantically indistinguishable.
+-ASAP uses a variety of techniques to preserve this invariant on
+-different versions of browsers and NodeJS.
+-
+-By design, ASAP can starve the event loop on the theory that, if there
+-is enough work to be done synchronously, albeit in separate events, long
+-enough to starve input or output, it is a strong indicator that the
+-program needs to push back on scheduling more work.
+-
+-Take care.  ASAP can sustain infinite recursive calls indefinitely
+-without warning.  This is behaviorally equivalent to an infinite loop.
+-It will not halt from a stack overflow, but it *will* chew through
+-memory (which is an oddity I cannot explain at this time).  Just as with
+-infinite loops, you can monitor a Node process for this behavior with a
+-heart-beat signal.  As with infinite loops, a very small amount of
+-caution goes a long way to avoiding problems.
++[Zalgo]: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony
++
++This CommonJS package provides an `asap` module that exports a function that
++executes a task function *as soon as possible*.
++
++ASAP strives to schedule events to occur before yielding for IO, reflow,
++or redrawing.
++Each event receives an independent stack, with only platform code in parent
++frames and the events run in the order they are scheduled.
++
++ASAP provides a fast event queue that will execute tasks until it is
++empty before yielding to the JavaScript engine's underlying event-loop.
++When a task gets added to a previously empty event queue, ASAP schedules a flush
++event, preferring for that event to occur before the JavaScript engine has an
++opportunity to perform IO tasks or rendering, thus making the first task and
++subsequent tasks semantically indistinguishable.
++ASAP uses a variety of techniques to preserve this invariant on different
++versions of browsers and Node.js.
++
++By design, ASAP prevents input events from being handled until the task
++queue is empty.
++If the process is busy enough, this may cause incoming connection requests to be
++dropped, and may cause existing connections to inform the sender to reduce the
++transmission rate or stall.
++ASAP allows this on the theory that, if there is enough work to do, there is no
++sense in looking for trouble.
++As a consequence, ASAP can interfere with smooth animation.
++If your task should be tied to the rendering loop, consider using
++`requestAnimationFrame` instead.
++A long sequence of tasks can also effect the long running script dialog.
++If this is a problem, you may be able to use ASAP’s cousin `setImmediate` to
++break long processes into shorter intervals and periodically allow the browser
++to breathe.
++`setImmediate` will yield for IO, reflow, and repaint events.
++It also returns a handler and can be canceled.
++For a `setImmediate` shim, consider [YuzuJS setImmediate][setImmediate].
++
++[setImmediate]: https://github.com/YuzuJS/setImmediate
++
++Take care.
++ASAP can sustain infinite recursive calls without warning.
++It will not halt from a stack overflow, and it will not consume unbounded
++memory.
++This is behaviorally equivalent to an infinite loop.
++Just as with infinite loops, you can monitor a Node.js process for this behavior
++with a heart-beat signal.
++As with infinite loops, a very small amount of caution goes a long way to
++avoiding problems.
+ 
+ ```javascript
+ function loop() {
+@@ -40,16 +72,113 @@ function loop() {
+ loop();
+ ```
+ 
+-ASAP is distinct from `setImmediate` in that it does not suffer the
+-overhead of returning a handle and being possible to cancel.  For a
+-`setImmediate` shim, consider [setImmediate][].
++In browsers, if a task throws an exception, it will not interrupt the flushing
++of high-priority tasks.
++The exception will be postponed to a later, low-priority event to avoid
++slow-downs.
++In Node.js, if a task throws an exception, ASAP will resume flushing only if—and
++only after—the error is handled by `domain.on("error")` or
++`process.on("uncaughtException")`.
++
++## Raw ASAP
++
++Checking for exceptions comes at a cost.
++The package also provides an `asap/raw` module that exports the underlying
++implementation which is faster but stalls if a task throws an exception.
++This internal version of the ASAP function does not check for errors.
++If a task does throw an error, it will stall the event queue unless you manually
++call `rawAsap.requestFlush()` before throwing the error, or any time after.
++
++In Node.js, `asap/raw` also runs all tasks outside any domain.
++If you need a task to be bound to your domain, you will have to do it manually.
++
++```js
++if (process.domain) {
++    task = process.domain.bind(task);
++}
++rawAsap(task);
++```
++
++## Tasks
++
++A task may be any object that implements `call()`.
++A function will suffice, but closures tend not to be reusable and can cause
++garbage collector churn.
++Both `asap` and `rawAsap` accept task objects to give you the option of
++recycling task objects or using higher callable object abstractions.
++See the `asap` source for an illustration.
++
++
++## Compatibility
++
++ASAP is tested on Node.js v0.10 and in a broad spectrum of web browsers.
++The following charts capture the browser test results for the most recent
++release.
++The first chart shows test results for ASAP running in the main window context.
++The second chart shows test results for ASAP running in a web worker context.
++Test results are inconclusive (grey) on browsers that do not support web
++workers.
++These data are captured automatically by [Continuous
++Integration][].
++
++[Continuous Integration]: https://github.com/kriskowal/asap/blob/master/CONTRIBUTING.md
++
++![Browser Compatibility](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-results-matrix.svg)
+ 
+-[setImmediate]: https://github.com/noblejs/setimmediate
++![Compatibility in Web Workers](http://kriskowal-asap.s3-website-us-west-2.amazonaws.com/train/integration-2/saucelabs-worker-results-matrix.svg)
++
++## Caveats
++
++When a task is added to an empty event queue, it is not always possible to
++guarantee that the task queue will begin flushing immediately after the current
++event.
++However, once the task queue begins flushing, it will not yield until the queue
++is empty, even if the queue grows while executing tasks.
++
++The following browsers allow the use of [DOM mutation observers][] to access
++the HTML [microtask queue][], and thus begin flushing ASAP's task queue
++immediately at the end of the current event loop turn, before any rendering or
++IO:
++
++[microtask queue]: http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#microtask-queue
++[DOM mutation observers]: http://dom.spec.whatwg.org/#mutation-observers
++
++- Android 4–4.3
++- Chrome 26–34
++- Firefox 14–29
++- Internet Explorer 11
++- iPad Safari 6–7.1
++- iPhone Safari 7–7.1
++- Safari 6–7
++
++In the absense of mutation observers, there are a few browsers, and situations
++like web workers in some of the above browsers,  where [message channels][]
++would be a useful way to avoid falling back to timers.
++Message channels give direct access to the HTML [task queue][], so the ASAP
++task queue would flush after any already queued rendering and IO tasks, but
++without having the minimum delay imposed by timers.
++However, among these browsers, Internet Explorer 10 and Safari do not reliably
++dispatch messages, so they are not worth the trouble to implement.
++
++[message channels]: http://www.whatwg.org/specs/web-apps/current-work/multipage/web-messaging.html#message-channels
++[task queue]: http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#concept-task
++
++- Internet Explorer 10
++- Safair 5.0-1
++- Opera 11-12
++
++In the absense of mutation observers, these browsers and the following browsers
++all fall back to using `setTimeout` and `setInterval` to ensure that a `flush`
++occurs.
++The implementation uses both and cancels whatever handler loses the race, since
++`setTimeout` tends to occasionally skip tasks in unisolated circumstances.
++Timers generally delay the flushing of ASAP's task queue for four milliseconds.
++
++- Firefox 3–13
++- Internet Explorer 6–10
++- iPad Safari 4.3
++- Lynx 2.8.7
+ 
+-If a task throws an exception, it will not interrupt the flushing of
+-high-priority tasks.  The exception will be postponed to a later,
+-low-priority event to avoid slow-downs, when the underlying JavaScript
+-engine will treat it as it does any unhandled exception.
+ 
+ ## Heritage
+ 
+@@ -58,13 +187,13 @@ It originally had a naïve implementation in terms of `setTimeout`, but
+ [Malte Ubl][NonBlocking] provided an insight that `postMessage` might be
+ useful for creating a high-priority, no-delay event dispatch hack.
+ Since then, Internet Explorer proposed and implemented `setImmediate`.
+-Robert Kratić began contributing to Q by measuring the performance of
++Robert Katić began contributing to Q by measuring the performance of
+ the internal implementation of `asap`, paying particular attention to
+-error recovery.  Domenic, Robert, and I collectively settled on the
+-current strategy of unrolling the high-priority event queue internally
+-regardless of what strategy we used to dispatch the potentially
+-lower-priority flush event.  Domenic went on to make ASAP cooperate with
+-NodeJS domains.
++error recovery.
++Domenic, Robert, and Kris Kowal collectively settled on the current strategy of
++unrolling the high-priority event queue internally regardless of what strategy
++we used to dispatch the potentially lower-priority flush event.
++Domenic went on to make ASAP cooperate with Node.js domains.
+ 
+ [Q]: https://github.com/kriskowal/q
+ [NonBlocking]: http://www.nonblocking.io/2011/06/windownexttick.html
+@@ -74,8 +203,35 @@ Case for setImmediate][NCZ].
+ 
+ [NCZ]: http://www.nczonline.net/blog/2013/07/09/the-case-for-setimmediate/
+ 
++Ember’s RSVP promise implementation later [adopted][RSVP ASAP] the name ASAP but
++further developed the implentation.
++Particularly, The `MessagePort` implementation was abandoned due to interaction
++[problems with Mobile Internet Explorer][IE Problems] in favor of an
++implementation backed on the newer and more reliable DOM `MutationObserver`
++interface.
++These changes were back-ported into this library.
++
++[IE Problems]: https://github.com/cujojs/when/issues/197
++[RSVP ASAP]: https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
++
++In addition, ASAP factored into `asap` and `asap/raw`, such that `asap` remained
++exception-safe, but `asap/raw` provided a tight kernel that could be used for
++tasks that guaranteed that they would not throw exceptions.
++This core is useful for promise implementations that capture thrown errors in
++rejected promises and do not need a second safety net.
++At the same time, the exception handling in `asap` was factored into separate
++implementations for Node.js and browsers, using the the [Browserify][Browser
++Config] `browser` property in `package.json` to instruct browser module loaders
++and bundlers, including [Browserify][], [Mr][], and [Mop][],  to use the
++browser-only implementation.
++
++[Browser Config]: https://gist.github.com/defunctzombie/4339901
++[Browserify]: https://github.com/substack/node-browserify
++[Mr]: https://github.com/montagejs/mr
++[Mop]: https://github.com/montagejs/mop
++
+ ## License
+ 
+-Copyright 2009-2013 by Contributors
++Copyright 2009-2014 by Contributors
+ MIT License (enclosed)
+ 
+diff --git a/node_modules/asap/asap.js b/node_modules/asap/asap.js
+index 2f85516..f04fcd5 100644
+--- a/node_modules/asap/asap.js
++++ b/node_modules/asap/asap.js
+@@ -1,113 +1,65 @@
+-
+-// Use the fastest possible means to execute a task in a future turn
+-// of the event loop.
+-
+-// linked list of tasks (single, with head node)
+-var head = {task: void 0, next: null};
+-var tail = head;
+-var flushing = false;
+-var requestFlush = void 0;
+-var isNodeJS = false;
+-
+-function flush() {
+-    /* jshint loopfunc: true */
+-
+-    while (head.next) {
+-        head = head.next;
+-        var task = head.task;
+-        head.task = void 0;
+-        var domain = head.domain;
+-
+-        if (domain) {
+-            head.domain = void 0;
+-            domain.enter();
+-        }
+-
+-        try {
+-            task();
+-
+-        } catch (e) {
+-            if (isNodeJS) {
+-                // In node, uncaught exceptions are considered fatal errors.
+-                // Re-throw them synchronously to interrupt flushing!
+-
+-                // Ensure continuation if the uncaught exception is suppressed
+-                // listening "uncaughtException" events (as domains does).
+-                // Continue in next event to avoid tick recursion.
+-                if (domain) {
+-                    domain.exit();
+-                }
+-                setTimeout(flush, 0);
+-                if (domain) {
+-                    domain.enter();
+-                }
+-
+-                throw e;
+-
+-            } else {
+-                // In browsers, uncaught exceptions are not fatal.
+-                // Re-throw them asynchronously to avoid slow-downs.
+-                setTimeout(function() {
+-                   throw e;
+-                }, 0);
+-            }
+-        }
+-
+-        if (domain) {
+-            domain.exit();
+-        }
+-    }
+-
+-    flushing = false;
+-}
+-
+-if (typeof process !== "undefined" && process.nextTick) {
+-    // Node.js before 0.9. Note that some fake-Node environments, like the
+-    // Mocha test runner, introduce a `process` global without a `nextTick`.
+-    isNodeJS = true;
+-
+-    requestFlush = function () {
+-        process.nextTick(flush);
+-    };
+-
+-} else if (typeof setImmediate === "function") {
+-    // In IE10, Node.js 0.9+, or https://github.com/NobleJS/setImmediate
+-    if (typeof window !== "undefined") {
+-        requestFlush = setImmediate.bind(window, flush);
++"use strict";
++
++var rawAsap = require("./raw");
++var freeTasks = [];
++
++/**
++ * Calls a task as soon as possible after returning, in its own event, with
++ * priority over IO events. An exception thrown in a task can be handled by
++ * `process.on("uncaughtException") or `domain.on("error")`, but will otherwise
++ * crash the process. If the error is handled, all subsequent tasks will
++ * resume.
++ *
++ * @param {{call}} task A callable object, typically a function that takes no
++ * arguments.
++ */
++module.exports = asap;
++function asap(task) {
++    var rawTask;
++    if (freeTasks.length) {
++        rawTask = freeTasks.pop();
+     } else {
+-        requestFlush = function () {
+-            setImmediate(flush);
+-        };
++        rawTask = new RawTask();
+     }
+-
+-} else if (typeof MessageChannel !== "undefined") {
+-    // modern browsers
+-    // http://www.nonblocking.io/2011/06/windownexttick.html
+-    var channel = new MessageChannel();
+-    channel.port1.onmessage = flush;
+-    requestFlush = function () {
+-        channel.port2.postMessage(0);
+-    };
+-
+-} else {
+-    // old browsers
+-    requestFlush = function () {
+-        setTimeout(flush, 0);
+-    };
++    rawTask.task = task;
++    rawTask.domain = process.domain;
++    rawAsap(rawTask);
+ }
+ 
+-function asap(task) {
+-    tail = tail.next = {
+-        task: task,
+-        domain: isNodeJS && process.domain,
+-        next: null
+-    };
++function RawTask() {
++    this.task = null;
++    this.domain = null;
++}
+ 
+-    if (!flushing) {
+-        flushing = true;
+-        requestFlush();
++RawTask.prototype.call = function () {
++    if (this.domain) {
++        this.domain.enter();
++    }
++    var threw = true;
++    try {
++        this.task.call();
++        threw = false;
++        // If the task throws an exception (presumably) Node.js restores the
++        // domain stack for the next event.
++        if (this.domain) {
++            this.domain.exit();
++        }
++    } finally {
++        // We use try/finally and a threw flag to avoid messing up stack traces
++        // when we catch and release errors.
++        if (threw) {
++            // In Node.js, uncaught exceptions are considered fatal errors.
++            // Re-throw them to interrupt flushing!
++            // Ensure that flushing continues if an uncaught exception is
++            // suppressed listening process.on("uncaughtException") or
++            // domain.on("error").
++            rawAsap.requestFlush();
++        }
++        // If the task threw an error, we do not want to exit the domain here.
++        // Exiting the domain would prevent the domain from catching the error.
++        this.task = null;
++        this.domain = null;
++        freeTasks.push(this);
+     }
+ };
+ 
+-module.exports = asap;
+-
+diff --git a/node_modules/asap/package.json b/node_modules/asap/package.json
+index 46dbba4..7a6ed52 100644
+--- a/node_modules/asap/package.json
++++ b/node_modules/asap/package.json
+@@ -1,65 +1,111 @@
+ {
+   "_args": [
+     [
+-      "asap@~1.0.0",
+-      "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/promise"
++      "asap@~2.0.3",
++      "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics/node_modules/promise"
+     ]
+   ],
+-  "_from": "asap@>=1.0.0 <1.1.0",
+-  "_id": "asap@1.0.0",
++  "_from": "asap@>=2.0.3 <2.1.0",
++  "_id": "asap@2.0.3",
+   "_inCache": true,
+   "_installable": true,
+   "_location": "/asap",
++  "_nodeVersion": "1.8.1",
+   "_npmUser": {
+     "email": "kris.kowal@cixar.com",
+     "name": "kriskowal"
+   },
+-  "_npmVersion": "1.2.15",
++  "_npmVersion": "2.8.3",
+   "_phantomChildren": {},
+   "_requested": {
+     "name": "asap",
+-    "raw": "asap@~1.0.0",
+-    "rawSpec": "~1.0.0",
++    "raw": "asap@~2.0.3",
++    "rawSpec": "~2.0.3",
+     "scope": null,
+-    "spec": ">=1.0.0 <1.1.0",
++    "spec": ">=2.0.3 <2.1.0",
+     "type": "range"
+   },
+   "_requiredBy": [
+     "/promise"
+   ],
+-  "_resolved": "https://registry.npmjs.org/asap/-/asap-1.0.0.tgz",
+-  "_shasum": "b2a45da5fdfa20b0496fc3768cc27c12fa916a7d",
++  "_resolved": "https://registry.npmjs.org/asap/-/asap-2.0.3.tgz",
++  "_shasum": "1fc1d1564ee11620dfca6d67029850913f9f4679",
+   "_shrinkwrap": null,
+-  "_spec": "asap@~1.0.0",
+-  "_where": "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/promise",
++  "_spec": "asap@~2.0.3",
++  "_where": "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics/node_modules/promise",
++  "browser": {
++    "./asap.js": "./browser-asap.js",
++    "./raw.js": "./browser-raw.js",
++    "./test/domain.js": "./test/browser-domain.js"
++  },
++  "bugs": {
++    "url": "https://github.com/kriskowal/asap/issues"
++  },
+   "dependencies": {},
+   "description": "High-priority task queue for Node.js and browsers",
+-  "devDependencies": {},
++  "devDependencies": {
++    "events": "^1.0.1",
++    "jshint": "^2.5.1",
++    "knox": "^0.8.10",
++    "mr": "^2.0.5",
++    "opener": "^1.3.0",
++    "q": "^2.0.3",
++    "q-io": "^2.0.3",
++    "saucelabs": "^0.1.1",
++    "wd": "^0.2.21",
++    "weak-map": "^1.0.5"
++  },
+   "directories": {},
+   "dist": {
+-    "shasum": "b2a45da5fdfa20b0496fc3768cc27c12fa916a7d",
+-    "tarball": "http://registry.npmjs.org/asap/-/asap-1.0.0.tgz"
++    "shasum": "1fc1d1564ee11620dfca6d67029850913f9f4679",
++    "tarball": "http://registry.npmjs.org/asap/-/asap-2.0.3.tgz"
+   },
++  "files": [
++    "asap.js",
++    "browser-asap.js",
++    "browser-raw.js",
++    "raw.js"
++  ],
++  "gitHead": "ccbf94d4e4a0c3afc2df13331044020a46a74ab6",
++  "homepage": "https://github.com/kriskowal/asap#readme",
+   "keywords": [
+     "event",
+     "queue",
+     "task"
+   ],
+-  "licenses": [
+-    {
+-      "type": "MIT",
+-      "url": "https://github.com/kriskowal/asap/raw/master/LICENSE.md"
+-    }
+-  ],
+-  "main": "asap",
++  "license": {
++    "type": "MIT",
++    "url": "https://github.com/kriskowal/asap/raw/master/LICENSE.md"
++  },
++  "main": "./asap.js",
+   "maintainers": [
+     {
+       "name": "kriskowal",
+       "email": "kris.kowal@cixar.com"
++    },
++    {
++      "name": "forbeslindesay",
++      "email": "forbes@lindesay.co.uk"
+     }
+   ],
+   "name": "asap",
+   "optionalDependencies": {},
+   "readme": "ERROR: No README data found!",
+-  "version": "1.0.0"
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/kriskowal/asap.git"
++  },
++  "scripts": {
++    "lint": "jshint raw.js asap.js browser-raw.js browser-asap.js $(find scripts -name '*.js' | grep -v gauntlet)",
++    "test": "npm run lint && npm run test-node",
++    "test-browser": "node scripts/publish-bundle.js test/asap-test.js | xargs opener",
++    "test-node": "node test/asap-test.js",
++    "test-publish": "node scripts/publish-bundle.js test/asap-test.js | pbcopy",
++    "test-saucelabs": "node scripts/saucelabs.js test/asap-test.js scripts/saucelabs-spot-configurations.json",
++    "test-saucelabs-all": "node scripts/saucelabs.js test/asap-test.js scripts/saucelabs-all-configurations.json",
++    "test-saucelabs-worker": "node scripts/saucelabs-worker-test.js scripts/saucelabs-spot-configurations.json",
++    "test-saucelabs-worker-all": "node scripts/saucelabs-worker-test.js scripts/saucelabs-all-configurations.json",
++    "test-travis": "npm run lint && npm run test-node && npm run test-saucelabs && npm run test-saucelabs-worker"
++  },
++  "version": "2.0.3"
+ }
+diff --git a/node_modules/promise/.npmignore b/node_modules/promise/.npmignore
+index 59bed65..ad5be4a 100644
+--- a/node_modules/promise/.npmignore
++++ b/node_modules/promise/.npmignore
+@@ -4,3 +4,4 @@ test
+ .gitignore
+ .travis.yml
+ component.json
++coverage
+diff --git a/node_modules/promise/Readme.md b/node_modules/promise/Readme.md
+index cc5b263..61ec052 100644
+--- a/node_modules/promise/Readme.md
++++ b/node_modules/promise/Readme.md
+@@ -5,9 +5,21 @@ This is a simple implementation of Promises.  It is a super set of ES6 Promises
+ 
+ For detailed tutorials on its use, see www.promisejs.org
+ 
+-[![Build Status](https://img.shields.io/travis/then/promise/master.svg)](https://travis-ci.org/then/promise)
+-[![Dependency Status](https://img.shields.io/gemnasium/then/promise.svg)](https://gemnasium.com/then/promise)
+-[![NPM version](https://img.shields.io/npm/v/promise.svg)](https://www.npmjs.org/package/promise)
++**N.B.** This promise exposes internals via underscore (`_`) prefixed properties.  If you use these, your code will break with each new release.
++
++[![travis][travis-image]][travis-url]
++[![dep][dep-image]][dep-url]
++[![npm][npm-image]][npm-url]
++[![downloads][downloads-image]][downloads-url]
++
++[travis-image]: https://img.shields.io/travis/then/promise.svg?style=flat
++[travis-url]: https://travis-ci.org/then/promise
++[dep-image]: https://img.shields.io/gemnasium/then/promise.svg?style=flat
++[dep-url]: https://gemnasium.com/then/promise
++[npm-image]: https://img.shields.io/npm/v/promise.svg?style=flat
++[npm-url]: https://npmjs.org/package/promise
++[downloads-image]: https://img.shields.io/npm/dm/promise.svg?style=flat
++[downloads-url]: https://npmjs.org/package/promise
+ 
+ ## Installation
+ 
+@@ -31,7 +43,7 @@ Note that the [es5-shim](https://github.com/es-shims/es5-shim) must be loaded be
+ 
+ ## Usage
+ 
+-The example below shows how you can load the promise library (in a way that works on both client and server).  It then demonstrates creating a promise from scratch.  You simply call `new Promise(fn)`.  There is a complete specification for what is returned by this method in [Promises/A+](http://promises-aplus.github.com/promises-spec/).
++The example below shows how you can load the promise library (in a way that works on both client and server using node or browserify).  It then demonstrates creating a promise from scratch.  You simply call `new Promise(fn)`.  There is a complete specification for what is returned by this method in [Promises/A+](http://promises-aplus.github.com/promises-spec/).
+ 
+ ```javascript
+ var Promise = require('promise');
+@@ -44,6 +56,56 @@ var promise = new Promise(function (resolve, reject) {
+ });
+ ```
+ 
++If you need [domains](https://iojs.org/api/domain.html) support, you should instead use:
++
++```js
++var Promise = require('promise/domains');
++```
++
++If you are in an environment that implements `setImmediate` and don't want the optimisations provided by asap, you can use:
++
++```js
++var Promise = require('promise/setimmediate');
++```
++
++If you only want part of the features, e.g. just a pure ES6 polyfill:
++
++```js
++var Promise = require('promise/lib/es6-extensions');
++// or require('promise/domains/es6-extensions');
++// or require('promise/setimmediate/es6-extensions');
++```
++
++## Unhandled Rejections
++
++By default, promises silence any unhandled rejections.
++
++You can enable logging of unhandled ReferenceErrors and TypeErrors via:
++
++```js
++require('promise/lib/rejection-tracking').enable();
++```
++
++Due to the performance cost, you should only do this during development.
++
++You can enable logging of all unhandled rejections if you need to debug an exception you think is being swallowed by promises:
++
++```js
++require('promise/lib/rejection-tracking').enable(
++  {allRejections: true}
++);
++```
++
++Due to the high probability of false positives, I only recommend using this when debugging specific issues that you think may be being swallowed.  For the preferred debugging method, see `Promise#done(onFulfilled, onRejected)`.
++
++`rejection-tracking.enable(options)` takes the following options:
++
++ - allRejections (`boolean`) - track all exceptions, not just reference errors and type errors.  Note that this has a high probability of resulting in false positives if your code loads data optimisticly
++ - whitelist (`Array<ErrorConstructor>`) - this defaults to `[ReferenceError, TypeError]` but you can override it with your own list of error constructors to track.
++ - `onUnhandled(id, error)` and `onHandled(id, error)` - you can use these to provide your own customised display for errors.  Note that if possible you should indicate that the error was a false positive if `onHandled` is called.  `onHandled` is only called if `onUnhandled` has already been called.
++
++To reduce the chance of false-positives there is a delay of up to 2 seconds before errors are logged.  This means that if you attach an error handler within 2 seconds, it won't be logged as a false positive.  ReferenceErrors and TypeErrors are only subject to a 100ms delay due to the higher likelihood that the error is due to programmer error.
++
+ ## API
+ 
+ Before all examples, you will need:
+@@ -69,9 +131,13 @@ This creates and returns a new promise.  `resolver` must be a function.  The `re
+ 
+ Converts values and foreign promises into Promises/A+ promises.  If you pass it a value then it returns a Promise for that value.  If you pass it something that is close to a promise (such as a jQuery attempt at a promise) it returns a Promise that takes on the state of `value` (rejected or fulfilled).
+ 
++#### Promise.reject(value)
++
++Returns a rejected promise with the given value.
++
+ #### Promise.all(array)
+ 
+-Returns a promise for an array.  If it is called with a single argument that `Array.isArray` then this returns a promise for a copy of that array with any promises replaced by their fulfilled values.  Otherwise it returns a promise for an array that conatins its arguments, except with promises replaced by their resolution values.  e.g.
++Returns a promise for an array.  If it is called with a single argument that `Array.isArray` then this returns a promise for a copy of that array with any promises replaced by their fulfilled values.  e.g.
+ 
+ ```js
+ Promise.all([Promise.resolve('a'), 'b', Promise.resolve('c')])
+@@ -80,13 +146,6 @@ Promise.all([Promise.resolve('a'), 'b', Promise.resolve('c')])
+     assert(res[1] === 'b')
+     assert(res[2] === 'c')
+   })
+-
+-Promise.all(Promise.resolve('a'), 'b', Promise.resolve('c'))
+-  .then(function (res) {
+-    assert(res[0] === 'a')
+-    assert(res[1] === 'b')
+-    assert(res[2] === 'c')
+-  })
+ ```
+ 
+ #### Promise.denodeify(fn)
+@@ -167,55 +226,6 @@ function awesomeAPI(foo, bar, callback) {
+ 
+ People who use typical node.js style callbacks will be able to just pass a callback and get the expected behavior.  The enlightened people can not pass a callback and will get awesome promises.
+ 
+-## Extending Promises
+-
+-  There are three options for extending the promises created by this library.
+-
+-### Inheritance
+-
+-  You can use inheritance if you want to create your own complete promise library with this as your basic starting point, perfect if you have lots of cool features you want to add.  Here is an example of a promise library called `Awesome`, which is built on top of `Promise` correctly.
+-
+-```javascript
+-var Promise = require('promise');
+-function Awesome(fn) {
+-  if (!(this instanceof Awesome)) return new Awesome(fn);
+-  Promise.call(this, fn);
+-}
+-Awesome.prototype = Object.create(Promise.prototype);
+-Awesome.prototype.constructor = Awesome;
+-
+-//Awesome extension
+-Awesome.prototype.spread = function (cb) {
+-  return this.then(function (arr) {
+-    return cb.apply(this, arr);
+-  })
+-};
+-```
+-
+-  N.B. if you fail to set the prototype and constructor properly or fail to do Promise.call, things can fail in really subtle ways.
+-
+-### Wrap
+-
+-  This is the nuclear option, for when you want to start from scratch.  It ensures you won't be impacted by anyone who is extending the prototype (see below).
+-
+-```javascript
+-function Uber(fn) {
+-  if (!(this instanceof Uber)) return new Uber(fn);
+-  var _prom = new Promise(fn);
+-  this.then = _prom.then;
+-}
+-
+-Uber.prototype.spread = function (cb) {
+-  return this.then(function (arr) {
+-    return cb.apply(this, arr);
+-  })
+-};
+-```
+-
+-### Extending the Prototype
+-
+-  In general, you should never extend the prototype of this promise implimenation because your extensions could easily conflict with someone elses extensions.  However, this organisation will host a library of extensions which do not conflict with each other, so you can safely enable any of those.  If you think of an extension that we don't provide and you want to write it, submit an issue on this repository and (if I agree) I'll set you up with a repository and give you permission to commit to it.
+-
+ ## License
+ 
+   MIT
+diff --git a/node_modules/promise/index.js b/node_modules/promise/index.js
+index 17d5ed1..1c38e46 100644
+--- a/node_modules/promise/index.js
++++ b/node_modules/promise/index.js
+@@ -1,6 +1,3 @@
+ 'use strict';
+ 
+-module.exports = require('./lib/core.js')
+-require('./lib/done.js')
+-require('./lib/es6-extensions.js')
+-require('./lib/node-extensions.js')
+\ No newline at end of file
++module.exports = require('./lib')
+diff --git a/node_modules/promise/lib/core.js b/node_modules/promise/lib/core.js
+index 05a4313..207fb81 100644
+--- a/node_modules/promise/lib/core.js
++++ b/node_modules/promise/lib/core.js
+@@ -1,82 +1,192 @@
+ 'use strict';
+ 
+-var asap = require('asap')
++var asap = require('asap/raw');
++
++function noop() {}
++
++// States:
++//
++// 0 - pending
++// 1 - fulfilled with _value
++// 2 - rejected with _value
++// 3 - adopted the state of another promise, _value
++//
++// once the state is no longer pending (0) it is immutable
++
++// All `_` prefixed properties will be reduced to `_{random number}`
++// at build time to obfuscate them and discourage their use.
++// We don't use symbols or Object.defineProperty to fully hide them
++// because the performance isn't good enough.
++
++
++// to avoid using try/catch inside critical functions, we
++// extract them to here.
++var LAST_ERROR = null;
++var IS_ERROR = {};
++function getThen(obj) {
++  try {
++    return obj.then;
++  } catch (ex) {
++    LAST_ERROR = ex;
++    return IS_ERROR;
++  }
++}
++
++function tryCallOne(fn, a) {
++  try {
++    return fn(a);
++  } catch (ex) {
++    LAST_ERROR = ex;
++    return IS_ERROR;
++  }
++}
++function tryCallTwo(fn, a, b) {
++  try {
++    fn(a, b);
++  } catch (ex) {
++    LAST_ERROR = ex;
++    return IS_ERROR;
++  }
++}
+ 
+ module.exports = Promise;
++
+ function Promise(fn) {
+-  if (typeof this !== 'object') throw new TypeError('Promises must be constructed via new')
+-  if (typeof fn !== 'function') throw new TypeError('not a function')
+-  var state = null
+-  var value = null
+-  var deferreds = []
+-  var self = this
++  if (typeof this !== 'object') {
++    throw new TypeError('Promises must be constructed via new');
++  }
++  if (typeof fn !== 'function') {
++    throw new TypeError('not a function');
++  }
++  this._45 = 0;
++  this._81 = 0;
++  this._65 = null;
++  this._54 = null;
++  if (fn === noop) return;
++  doResolve(fn, this);
++}
++Promise._10 = null;
++Promise._97 = null;
++Promise._61 = noop;
+ 
+-  this.then = function(onFulfilled, onRejected) {
+-    return new self.constructor(function(resolve, reject) {
+-      handle(new Handler(onFulfilled, onRejected, resolve, reject))
+-    })
++Promise.prototype.then = function(onFulfilled, onRejected) {
++  if (this.constructor !== Promise) {
++    return safeThen(this, onFulfilled, onRejected);
+   }
++  var res = new Promise(noop);
++  handle(this, new Handler(onFulfilled, onRejected, res));
++  return res;
++};
+ 
+-  function handle(deferred) {
+-    if (state === null) {
+-      deferreds.push(deferred)
+-      return
++function safeThen(self, onFulfilled, onRejected) {
++  return new self.constructor(function (resolve, reject) {
++    var res = new Promise(noop);
++    res.then(resolve, reject);
++    handle(self, new Handler(onFulfilled, onRejected, res));
++  });
++};
++function handle(self, deferred) {
++  while (self._81 === 3) {
++    self = self._65;
++  }
++  if (Promise._10) {
++    Promise._10(self);
++  }
++  if (self._81 === 0) {
++    if (self._45 === 0) {
++      self._45 = 1;
++      self._54 = deferred;
++      return;
+     }
+-    asap(function() {
+-      var cb = state ? deferred.onFulfilled : deferred.onRejected
+-      if (cb === null) {
+-        (state ? deferred.resolve : deferred.reject)(value)
+-        return
+-      }
+-      var ret
+-      try {
+-        ret = cb(value)
+-      }
+-      catch (e) {
+-        deferred.reject(e)
+-        return
+-      }
+-      deferred.resolve(ret)
+-    })
++    if (self._45 === 1) {
++      self._45 = 2;
++      self._54 = [self._54, deferred];
++      return;
++    }
++    self._54.push(deferred);
++    return;
+   }
++  handleResolved(self, deferred);
++}
+ 
+-  function resolve(newValue) {
+-    try { //Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
+-      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.')
+-      if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
+-        var then = newValue.then
+-        if (typeof then === 'function') {
+-          doResolve(then.bind(newValue), resolve, reject)
+-          return
+-        }
++function handleResolved(self, deferred) {
++  asap(function() {
++    var cb = self._81 === 1 ? deferred.onFulfilled : deferred.onRejected;
++    if (cb === null) {
++      if (self._81 === 1) {
++        resolve(deferred.promise, self._65);
++      } else {
++        reject(deferred.promise, self._65);
+       }
+-      state = true
+-      value = newValue
+-      finale()
+-    } catch (e) { reject(e) }
++      return;
++    }
++    var ret = tryCallOne(cb, self._65);
++    if (ret === IS_ERROR) {
++      reject(deferred.promise, LAST_ERROR);
++    } else {
++      resolve(deferred.promise, ret);
++    }
++  });
++}
++function resolve(self, newValue) {
++  // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
++  if (newValue === self) {
++    return reject(
++      self,
++      new TypeError('A promise cannot be resolved with itself.')
++    );
+   }
+-
+-  function reject(newValue) {
+-    state = false
+-    value = newValue
+-    finale()
++  if (
++    newValue &&
++    (typeof newValue === 'object' || typeof newValue === 'function')
++  ) {
++    var then = getThen(newValue);
++    if (then === IS_ERROR) {
++      return reject(self, LAST_ERROR);
++    }
++    if (
++      then === self.then &&
++      newValue instanceof Promise
++    ) {
++      self._81 = 3;
++      self._65 = newValue;
++      finale(self);
++      return;
++    } else if (typeof then === 'function') {
++      doResolve(then.bind(newValue), self);
++      return;
++    }
+   }
++  self._81 = 1;
++  self._65 = newValue;
++  finale(self);
++}
+ 
+-  function finale() {
+-    for (var i = 0, len = deferreds.length; i < len; i++)
+-      handle(deferreds[i])
+-    deferreds = null
++function reject(self, newValue) {
++  self._81 = 2;
++  self._65 = newValue;
++  if (Promise._97) {
++    Promise._97(self, newValue);
++  }
++  finale(self);
++}
++function finale(self) {
++  if (self._45 === 1) {
++    handle(self, self._54);
++    self._54 = null;
++  }
++  if (self._45 === 2) {
++    for (var i = 0; i < self._54.length; i++) {
++      handle(self, self._54[i]);
++    }
++    self._54 = null;
+   }
+-
+-  doResolve(fn, resolve, reject)
+ }
+ 
+-
+-function Handler(onFulfilled, onRejected, resolve, reject){
+-  this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null
+-  this.onRejected = typeof onRejected === 'function' ? onRejected : null
+-  this.resolve = resolve
+-  this.reject = reject
++function Handler(onFulfilled, onRejected, promise){
++  this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
++  this.onRejected = typeof onRejected === 'function' ? onRejected : null;
++  this.promise = promise;
+ }
+ 
+ /**
+@@ -85,21 +195,19 @@ function Handler(onFulfilled, onRejected, resolve, reject){
+  *
+  * Makes no guarantees about asynchrony.
+  */
+-function doResolve(fn, onFulfilled, onRejected) {
++function doResolve(fn, promise) {
+   var done = false;
+-  try {
+-    fn(function (value) {
+-      if (done) return
+-      done = true
+-      onFulfilled(value)
+-    }, function (reason) {
+-      if (done) return
+-      done = true
+-      onRejected(reason)
+-    })
+-  } catch (ex) {
+-    if (done) return
+-    done = true
+-    onRejected(ex)
++  var res = tryCallTwo(fn, function (value) {
++    if (done) return;
++    done = true;
++    resolve(promise, value);
++  }, function (reason) {
++    if (done) return;
++    done = true;
++    reject(promise, reason);
++  })
++  if (!done && res === IS_ERROR) {
++    done = true;
++    reject(promise, LAST_ERROR);
+   }
+ }
+diff --git a/node_modules/promise/lib/done.js b/node_modules/promise/lib/done.js
+index 2da6208..f879317 100644
+--- a/node_modules/promise/lib/done.js
++++ b/node_modules/promise/lib/done.js
+@@ -1,14 +1,13 @@
+ 'use strict';
+ 
+-var Promise = require('./core.js')
+-var asap = require('asap')
++var Promise = require('./core.js');
+ 
+-module.exports = Promise
++module.exports = Promise;
+ Promise.prototype.done = function (onFulfilled, onRejected) {
+-  var self = arguments.length ? this.then.apply(this, arguments) : this
++  var self = arguments.length ? this.then.apply(this, arguments) : this;
+   self.then(null, function (err) {
+-    asap(function () {
+-      throw err
+-    })
+-  })
+-}
+\ No newline at end of file
++    setTimeout(function () {
++      throw err;
++    }, 0);
++  });
++};
+diff --git a/node_modules/promise/lib/es6-extensions.js b/node_modules/promise/lib/es6-extensions.js
+index 084c1cd..1ab6eae 100644
+--- a/node_modules/promise/lib/es6-extensions.js
++++ b/node_modules/promise/lib/es6-extensions.js
+@@ -2,107 +2,106 @@
+ 
+ //This file contains the ES6 extensions to the core Promises/A+ API
+ 
+-var Promise = require('./core.js')
+-var asap = require('asap')
++var Promise = require('./core.js');
+ 
+-module.exports = Promise
++module.exports = Promise;
+ 
+ /* Static Functions */
+ 
+-function ValuePromise(value) {
+-  this.then = function (onFulfilled) {
+-    if (typeof onFulfilled !== 'function') return this
+-    return new Promise(function (resolve, reject) {
+-      asap(function () {
+-        try {
+-          resolve(onFulfilled(value))
+-        } catch (ex) {
+-          reject(ex);
+-        }
+-      })
+-    })
+-  }
++var TRUE = valuePromise(true);
++var FALSE = valuePromise(false);
++var NULL = valuePromise(null);
++var UNDEFINED = valuePromise(undefined);
++var ZERO = valuePromise(0);
++var EMPTYSTRING = valuePromise('');
++
++function valuePromise(value) {
++  var p = new Promise(Promise._61);
++  p._81 = 1;
++  p._65 = value;
++  return p;
+ }
+-ValuePromise.prototype = Promise.prototype
+-
+-var TRUE = new ValuePromise(true)
+-var FALSE = new ValuePromise(false)
+-var NULL = new ValuePromise(null)
+-var UNDEFINED = new ValuePromise(undefined)
+-var ZERO = new ValuePromise(0)
+-var EMPTYSTRING = new ValuePromise('')
+-
+ Promise.resolve = function (value) {
+-  if (value instanceof Promise) return value
++  if (value instanceof Promise) return value;
+ 
+-  if (value === null) return NULL
+-  if (value === undefined) return UNDEFINED
+-  if (value === true) return TRUE
+-  if (value === false) return FALSE
+-  if (value === 0) return ZERO
+-  if (value === '') return EMPTYSTRING
++  if (value === null) return NULL;
++  if (value === undefined) return UNDEFINED;
++  if (value === true) return TRUE;
++  if (value === false) return FALSE;
++  if (value === 0) return ZERO;
++  if (value === '') return EMPTYSTRING;
+ 
+   if (typeof value === 'object' || typeof value === 'function') {
+     try {
+-      var then = value.then
++      var then = value.then;
+       if (typeof then === 'function') {
+-        return new Promise(then.bind(value))
++        return new Promise(then.bind(value));
+       }
+     } catch (ex) {
+       return new Promise(function (resolve, reject) {
+-        reject(ex)
+-      })
++        reject(ex);
++      });
+     }
+   }
+-
+-  return new ValuePromise(value)
+-}
++  return valuePromise(value);
++};
+ 
+ Promise.all = function (arr) {
+-  var args = Array.prototype.slice.call(arr)
++  var args = Array.prototype.slice.call(arr);
+ 
+   return new Promise(function (resolve, reject) {
+-    if (args.length === 0) return resolve([])
+-    var remaining = args.length
++    if (args.length === 0) return resolve([]);
++    var remaining = args.length;
+     function res(i, val) {
+-      try {
+-        if (val && (typeof val === 'object' || typeof val === 'function')) {
+-          var then = val.then
++      if (val && (typeof val === 'object' || typeof val === 'function')) {
++        if (val instanceof Promise && val.then === Promise.prototype.then) {
++          while (val._81 === 3) {
++            val = val._65;
++          }
++          if (val._81 === 1) return res(i, val._65);
++          if (val._81 === 2) reject(val._65);
++          val.then(function (val) {
++            res(i, val);
++          }, reject);
++          return;
++        } else {
++          var then = val.then;
+           if (typeof then === 'function') {
+-            then.call(val, function (val) { res(i, val) }, reject)
+-            return
++            var p = new Promise(then.bind(val));
++            p.then(function (val) {
++              res(i, val);
++            }, reject);
++            return;
+           }
+         }
+-        args[i] = val
+-        if (--remaining === 0) {
+-          resolve(args);
+-        }
+-      } catch (ex) {
+-        reject(ex)
++      }
++      args[i] = val;
++      if (--remaining === 0) {
++        resolve(args);
+       }
+     }
+     for (var i = 0; i < args.length; i++) {
+-      res(i, args[i])
++      res(i, args[i]);
+     }
+-  })
+-}
++  });
++};
+ 
+ Promise.reject = function (value) {
+-  return new Promise(function (resolve, reject) { 
++  return new Promise(function (resolve, reject) {
+     reject(value);
+   });
+-}
++};
+ 
+ Promise.race = function (values) {
+-  return new Promise(function (resolve, reject) { 
++  return new Promise(function (resolve, reject) {
+     values.forEach(function(value){
+       Promise.resolve(value).then(resolve, reject);
+-    })
++    });
+   });
+-}
++};
+ 
+ /* Prototype Methods */
+ 
+ Promise.prototype['catch'] = function (onRejected) {
+   return this.then(null, onRejected);
+-}
++};
+diff --git a/node_modules/promise/lib/node-extensions.js b/node_modules/promise/lib/node-extensions.js
+index 5e60f9e..890ae45 100644
+--- a/node_modules/promise/lib/node-extensions.js
++++ b/node_modules/promise/lib/node-extensions.js
+@@ -1,47 +1,114 @@
+ 'use strict';
+ 
+-//This file contains then/promise specific extensions that are only useful for node.js interop
++// This file contains then/promise specific extensions that are only useful
++// for node.js interop
+ 
+-var Promise = require('./core.js')
+-var asap = require('asap')
++var Promise = require('./core.js');
++var asap = require('asap');
+ 
+-module.exports = Promise
++module.exports = Promise;
+ 
+ /* Static Functions */
+ 
+ Promise.denodeify = function (fn, argumentCount) {
+-  argumentCount = argumentCount || Infinity
+-  return function () {
+-    var self = this
+-    var args = Array.prototype.slice.call(arguments)
+-    return new Promise(function (resolve, reject) {
+-      while (args.length && args.length > argumentCount) {
+-        args.pop()
+-      }
+-      args.push(function (err, res) {
+-        if (err) reject(err)
+-        else resolve(res)
+-      })
+-      var res = fn.apply(self, args)
+-      if (res && (typeof res === 'object' || typeof res === 'function') && typeof res.then === 'function') {
+-        resolve(res)
+-      }
+-    })
++  if (
++    typeof argumentCount === 'number' && argumentCount !== Infinity
++  ) {
++    return denodeifyWithCount(fn, argumentCount);
++  } else {
++    return denodeifyWithoutCount(fn);
++  }
++}
++
++var callbackFn = (
++  'function (err, res) {' +
++  'if (err) { rj(err); } else { rs(res); }' +
++  '}'
++);
++function denodeifyWithCount(fn, argumentCount) {
++  var args = [];
++  for (var i = 0; i < argumentCount; i++) {
++    args.push('a' + i);
+   }
++  var body = [
++    'return function (' + args.join(',') + ') {',
++    'var self = this;',
++    'return new Promise(function (rs, rj) {',
++    'var res = fn.call(',
++    ['self'].concat(args).concat([callbackFn]).join(','),
++    ');',
++    'if (res &&',
++    '(typeof res === "object" || typeof res === "function") &&',
++    'typeof res.then === "function"',
++    ') {rs(res);}',
++    '});',
++    '};'
++  ].join('');
++  return Function(['Promise', 'fn'], body)(Promise, fn);
+ }
++function denodeifyWithoutCount(fn) {
++  var fnLength = Math.max(fn.length - 1, 3);
++  var args = [];
++  for (var i = 0; i < fnLength; i++) {
++    args.push('a' + i);
++  }
++  var body = [
++    'return function (' + args.join(',') + ') {',
++    'var self = this;',
++    'var args;',
++    'var argLength = arguments.length;',
++    'if (arguments.length > ' + fnLength + ') {',
++    'args = new Array(arguments.length + 1);',
++    'for (var i = 0; i < arguments.length; i++) {',
++    'args[i] = arguments[i];',
++    '}',
++    '}',
++    'return new Promise(function (rs, rj) {',
++    'var cb = ' + callbackFn + ';',
++    'var res;',
++    'switch (argLength) {',
++    args.concat(['extra']).map(function (_, index) {
++      return (
++        'case ' + (index) + ':' +
++        'res = fn.call(' + ['self'].concat(args.slice(0, index)).concat('cb').join(',') + ');' +
++        'break;'
++      );
++    }).join(''),
++    'default:',
++    'args[argLength] = cb;',
++    'res = fn.apply(self, args);',
++    '}',
++    
++    'if (res &&',
++    '(typeof res === "object" || typeof res === "function") &&',
++    'typeof res.then === "function"',
++    ') {rs(res);}',
++    '});',
++    '};'
++  ].join('');
++
++  return Function(
++    ['Promise', 'fn'],
++    body
++  )(Promise, fn);
++}
++
+ Promise.nodeify = function (fn) {
+   return function () {
+-    var args = Array.prototype.slice.call(arguments)
+-    var callback = typeof args[args.length - 1] === 'function' ? args.pop() : null
+-    var ctx = this
++    var args = Array.prototype.slice.call(arguments);
++    var callback =
++      typeof args[args.length - 1] === 'function' ? args.pop() : null;
++    var ctx = this;
+     try {
+-      return fn.apply(this, arguments).nodeify(callback, ctx)
++      return fn.apply(this, arguments).nodeify(callback, ctx);
+     } catch (ex) {
+       if (callback === null || typeof callback == 'undefined') {
+-        return new Promise(function (resolve, reject) { reject(ex) })
++        return new Promise(function (resolve, reject) {
++          reject(ex);
++        });
+       } else {
+         asap(function () {
+-          callback.call(ctx, ex)
++          callback.call(ctx, ex);
+         })
+       }
+     }
+@@ -49,15 +116,15 @@ Promise.nodeify = function (fn) {
+ }
+ 
+ Promise.prototype.nodeify = function (callback, ctx) {
+-  if (typeof callback != 'function') return this
++  if (typeof callback != 'function') return this;
+ 
+   this.then(function (value) {
+     asap(function () {
+-      callback.call(ctx, null, value)
+-    })
++      callback.call(ctx, null, value);
++    });
+   }, function (err) {
+     asap(function () {
+-      callback.call(ctx, err)
+-    })
+-  })
++      callback.call(ctx, err);
++    });
++  });
+ }
+diff --git a/node_modules/promise/package.json b/node_modules/promise/package.json
+index 1acfe8a..672a795 100644
+--- a/node_modules/promise/package.json
++++ b/node_modules/promise/package.json
+@@ -1,37 +1,38 @@
+ {
+   "_args": [
+     [
+-      "promise@^6.0.1",
+-      "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/jstransformer"
++      "promise",
++      "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics"
+     ]
+   ],
+-  "_from": "promise@>=6.0.1 <7.0.0",
+-  "_id": "promise@6.1.0",
++  "_from": "promise@latest",
++  "_id": "promise@7.1.1",
+   "_inCache": true,
+   "_installable": true,
+   "_location": "/promise",
++  "_nodeVersion": "1.6.2",
+   "_npmUser": {
+     "email": "forbes@lindesay.co.uk",
+     "name": "forbeslindesay"
+   },
+-  "_npmVersion": "1.5.0-alpha-4",
++  "_npmVersion": "2.7.1",
+   "_phantomChildren": {},
+   "_requested": {
+     "name": "promise",
+-    "raw": "promise@^6.0.1",
+-    "rawSpec": "^6.0.1",
++    "raw": "promise",
++    "rawSpec": "",
+     "scope": null,
+-    "spec": ">=6.0.1 <7.0.0",
+-    "type": "range"
++    "spec": "latest",
++    "type": "tag"
+   },
+   "_requiredBy": [
+-    "/jstransformer"
++    "/"
+   ],
+-  "_resolved": "https://registry.npmjs.org/promise/-/promise-6.1.0.tgz",
+-  "_shasum": "2ce729f6b94b45c26891ad0602c5c90e04c6eef6",
++  "_resolved": "https://registry.npmjs.org/promise/-/promise-7.1.1.tgz",
++  "_shasum": "489654c692616b8aa55b0724fa809bb7db49c5bf",
+   "_shrinkwrap": null,
+-  "_spec": "promise@^6.0.1",
+-  "_where": "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/jstransformer",
++  "_spec": "promise",
++  "_where": "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics",
+   "author": {
+     "name": "ForbesLindesay"
+   },
+@@ -39,20 +40,23 @@
+     "url": "https://github.com/then/promise/issues"
+   },
+   "dependencies": {
+-    "asap": "~1.0.0"
++    "asap": "~2.0.3"
+   },
+   "description": "Bare bones Promises/A+ implementation",
+   "devDependencies": {
++    "acorn": "^1.0.1",
+     "better-assert": "*",
++    "istanbul": "^0.3.13",
+     "mocha": "*",
+-    "promises-aplus-tests": "*"
++    "promises-aplus-tests": "*",
++    "rimraf": "^2.3.2"
+   },
+   "directories": {},
+   "dist": {
+-    "shasum": "2ce729f6b94b45c26891ad0602c5c90e04c6eef6",
+-    "tarball": "http://registry.npmjs.org/promise/-/promise-6.1.0.tgz"
++    "shasum": "489654c692616b8aa55b0724fa809bb7db49c5bf",
++    "tarball": "https://registry.npmjs.org/promise/-/promise-7.1.1.tgz"
+   },
+-  "gitHead": "c627c0cc1f886ed3aa26edec97838ec9e7dd858b",
++  "gitHead": "90757a38c86975f36893012581b72315b352d482",
+   "homepage": "https://github.com/then/promise",
+   "license": "MIT",
+   "main": "index.js",
+@@ -74,9 +78,16 @@
+     "url": "git+https://github.com/then/promise.git"
+   },
+   "scripts": {
+-    "test": "mocha --timeout 200 --slow 99999",
+-    "test-extensions": "mocha test/extensions-tests.js -R spec --timeout 200 --slow 999999",
+-    "test-resolve": "mocha test/resolver-tests.js -R spec --timeout 200 --slow 999999"
++    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --bail --timeout 200 --slow 99999 -R dot",
++    "prepublish": "node build",
++    "pretest": "node build",
++    "pretest-extensions": "node build",
++    "pretest-memory-leak": "node build",
++    "pretest-resolve": "node build",
++    "test": "mocha --bail --timeout 200 --slow 99999 -R dot && npm run test-memory-leak",
++    "test-extensions": "mocha test/extensions-tests.js --timeout 200 --slow 999999",
++    "test-memory-leak": "node --expose-gc test/memory-leak.js",
++    "test-resolve": "mocha test/resolver-tests.js --timeout 200 --slow 999999"
+   },
+-  "version": "6.1.0"
++  "version": "7.1.1"
+ }
+diff --git a/node_modules/q/CONTRIBUTING.md b/node_modules/q/CONTRIBUTING.md
+deleted file mode 100644
+index 500ab17..0000000
+--- a/node_modules/q/CONTRIBUTING.md
++++ /dev/null
+@@ -1,40 +0,0 @@
+-
+-For pull requests:
+-
+--   Be consistent with prevalent style and design decisions.
+--   Add a Jasmine spec to `specs/q-spec.js`.
+--   Use `npm test` to avoid regressions.
+--   Run tests in `q-spec/run.html` in as many supported browsers as you
+-    can find the will to deal with.
+--   Do not build minified versions; we do this each release.
+--   If you would be so kind, add a note to `CHANGES.md` in an
+-    appropriate section:
+-
+-    -   `Next Major Version` if it introduces backward incompatibilities
+-        to code in the wild using documented features.
+-    -   `Next Minor Version` if it adds a new feature.
+-    -   `Next Patch Version` if it fixes a bug.
+-
+-For releases:
+-
+--   Run `npm test`.
+--   Run tests in `q-spec/run.html` in a representative sample of every
+-    browser under the sun.
+--   Run `npm run cover` and make sure you're happy with the results.
+--   Run `npm run minify` and be sure to commit the resulting `q.min.js`.
+--   Note the Gzipped size output by the previous command, and update
+-    `README.md` if it has changed to 1 significant digit.
+--   Stash any local changes.
+--   Update `CHANGES.md` to reflect all changes in the differences
+-    between `HEAD` and the previous tagged version.  Give credit where
+-    credit is due.
+--   Update `README.md` to address all new, non-experimental features.
+--   Update the API reference on the Wiki to reflect all non-experimental
+-    features.
+--   Use `npm version major|minor|patch` to update `package.json`,
+-    commit, and tag the new version.
+--   Use `npm publish` to send up a new release.
+--   Send an email to the q-continuum mailing list announcing the new
+-    release and the notes from the change log.  This helps folks
+-    maintaining other package ecosystems.
+-
+diff --git a/node_modules/q/README.md b/node_modules/q/README.md
+index bdd4168..9065bfa 100644
+--- a/node_modules/q/README.md
++++ b/node_modules/q/README.md
+@@ -1,15 +1,15 @@
+ [![Build Status](https://secure.travis-ci.org/kriskowal/q.png?branch=master)](http://travis-ci.org/kriskowal/q)
+ 
+ <a href="http://promises-aplus.github.com/promises-spec">
+-    <img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png"
+-         align="right" alt="Promises/A+ logo" />
++    <img src="http://kriskowal.github.io/q/q.png"
++         align="right" alt="Q logo" />
+ </a>
+ 
+ *This is Q version 1, from the `v1` branch in Git. This documentation applies to
+ the latest of both the version 1 and version 0.9 release trains. These releases
+ are stable. There will be no further releases of 0.9 after 0.9.7 which is nearly
+ equivalent to version 1.0.0. All further releases of `q@~1.0` will be backward
+-compatible. The version 2 release train introduces significant but
++compatible. The version 2 release train introduces significant and
+ backward-incompatible changes and is experimental at this time.*
+ 
+ If a function cannot return a value or throw an exception without
+@@ -80,7 +80,7 @@ The Q module can be loaded as:
+     the [q](https://npmjs.org/package/q) package
+ -   An AMD module
+ -   A [component](https://github.com/component/component) as ``microjs/q``
+--   Using [bower](http://bower.io/) as ``q``
++-   Using [bower](http://bower.io/) as `q#1.0.1`
+ -   Using [NuGet](http://nuget.org/) as [Q](https://nuget.org/packages/q)
+ 
+ Q can exchange promises with jQuery, Dojo, When.js, WinJS, and more.
+@@ -294,7 +294,7 @@ If you have a promise for an array, you can use ``spread`` as a
+ replacement for ``then``.  The ``spread`` function “spreads” the
+ values over the arguments of the fulfillment handler.  The rejection handler
+ will get called at the first sign of failure.  That is, whichever of
+-the recived promises fails first gets handled by the rejection handler.
++the received promises fails first gets handled by the rejection handler.
+ 
+ ```javascript
+ function eventualAdd(a, b) {
+@@ -335,6 +335,18 @@ Q.allSettled(promises)
+ });
+ ```
+ 
++The ``any`` function accepts an array of promises and returns a promise that is
++fulfilled by the first given promise to be fulfilled, or rejected if all of the
++given promises are rejected.
++
++```javascript
++Q.any(promises)
++.then(function (first) {
++    // Any of the promises was fulfilled.
++}, function (error) {
++    // All of the promises were rejected.
++});
++```
+ 
+ ### Sequences
+ 
+@@ -366,16 +378,16 @@ return funcs.reduce(function (soFar, f) {
+ }, Q(initialVal));
+ ```
+ 
+-Or, you could use th ultra-compact version:
++Or, you could use the ultra-compact version:
+ 
+ ```javascript
+-return funcs.reduce(Q.when, Q());
++return funcs.reduce(Q.when, Q(initialVal));
+ ```
+ 
+ ### Handling Errors
+ 
+ One sometimes-unintuive aspect of promises is that if you throw an
+-exception in the fulfillment handler, it will not be be caught by the error
++exception in the fulfillment handler, it will not be caught by the error
+ handler.
+ 
+ ```javascript
+@@ -610,6 +622,46 @@ requestOkText("http://localhost:3000")
+ });
+ ```
+ 
++#### Using `Q.Promise`
++
++This is an alternative promise-creation API that has the same power as
++the deferred concept, but without introducing another conceptual entity.
++
++Rewriting the `requestOkText` example above using `Q.Promise`:
++
++```javascript
++function requestOkText(url) {
++    return Q.Promise(function(resolve, reject, notify) {
++        var request = new XMLHttpRequest();
++
++        request.open("GET", url, true);
++        request.onload = onload;
++        request.onerror = onerror;
++        request.onprogress = onprogress;
++        request.send();
++
++        function onload() {
++            if (request.status === 200) {
++                resolve(request.responseText);
++            } else {
++                reject(new Error("Status code was " + request.status));
++            }
++        }
++
++        function onerror() {
++            reject(new Error("Can't XHR " + JSON.stringify(url)));
++        }
++
++        function onprogress(event) {
++            notify(event.loaded / event.total);
++        }
++    });
++}
++```
++
++If `requestOkText` were to throw an exception, the returned promise would be
++rejected with that thrown exception as the rejection reason.
++
+ ### The Middle
+ 
+ If you are using a function that may return a promise, but just might
+@@ -798,11 +850,20 @@ From previous event:
+     at Object.<anonymous> (/path/to/test.js:7:1)
+ ```
+ 
+-Note how you can see the the function that triggered the async operation in the
++Note how you can see the function that triggered the async operation in the
+ stack trace! This is very helpful for debugging, as otherwise you end up getting
+ only the first line, plus a bunch of Q internals, with no sign of where the
+ operation started.
+ 
++In node.js, this feature can also be enabled through the Q_DEBUG environment
++variable:
++
++```
++Q_DEBUG=1 node server.js
++```
++
++This will enable long stack support in every instance of Q.
++
+ This feature does come with somewhat-serious performance and memory overhead,
+ however. If you're working with lots of promises, or trying to scale a server
+ to many users, you should probably keep it off. But in development, go for it!
+@@ -815,6 +876,6 @@ You can view the results of the Q test suite [in your browser][tests]!
+ 
+ ## License
+ 
+-Copyright 2009–2014 Kristopher Michael Kowal
++Copyright 2009–2015 Kristopher Michael Kowal and contributors
+ MIT License (enclosed)
+ 
+diff --git a/node_modules/q/benchmark/compare-with-callbacks.js b/node_modules/q/benchmark/compare-with-callbacks.js
+deleted file mode 100644
+index 97f1298..0000000
+--- a/node_modules/q/benchmark/compare-with-callbacks.js
++++ /dev/null
+@@ -1,71 +0,0 @@
+-"use strict";
+-
+-var Q = require("../q");
+-var fs = require("fs");
+-
+-suite("A single simple async operation", function () {
+-    bench("with an immediately-fulfilled promise", function (done) {
+-        Q().then(done);
+-    });
+-
+-    bench("with direct setImmediate usage", function (done) {
+-        setImmediate(done);
+-    });
+-
+-    bench("with direct setTimeout(…, 0)", function (done) {
+-        setTimeout(done, 0);
+-    });
+-});
+-
+-suite("A fs.readFile", function () {
+-    var denodeified = Q.denodeify(fs.readFile);
+-
+-    set("iterations", 1000);
+-    set("delay", 1000);
+-
+-    bench("directly, with callbacks", function (done) {
+-        fs.readFile(__filename, done);
+-    });
+-
+-    bench("with Q.nfcall", function (done) {
+-        Q.nfcall(fs.readFile, __filename).then(done);
+-    });
+-
+-    bench("with a Q.denodeify'ed version", function (done) {
+-        denodeified(__filename).then(done);
+-    });
+-
+-    bench("with manual usage of deferred.makeNodeResolver", function (done) {
+-        var deferred = Q.defer();
+-        fs.readFile(__filename, deferred.makeNodeResolver());
+-        deferred.promise.then(done);
+-    });
+-});
+-
+-suite("1000 operations in parallel", function () {
+-    function makeCounter(desiredCount, ultimateCallback) {
+-        var soFar = 0;
+-        return function () {
+-            if (++soFar === desiredCount) {
+-                ultimateCallback();
+-            }
+-        };
+-    }
+-    var numberOfOps = 1000;
+-
+-    bench("with immediately-fulfilled promises", function (done) {
+-        var counter = makeCounter(numberOfOps, done);
+-
+-        for (var i = 0; i < numberOfOps; ++i) {
+-            Q().then(counter);
+-        }
+-    });
+-
+-    bench("with direct setImmediate usage", function (done) {
+-        var counter = makeCounter(numberOfOps, done);
+-
+-        for (var i = 0; i < numberOfOps; ++i) {
+-            setImmediate(counter);
+-        }
+-    });
+-});
+diff --git a/node_modules/q/benchmark/scenarios.js b/node_modules/q/benchmark/scenarios.js
+deleted file mode 100644
+index 7c18564..0000000
+--- a/node_modules/q/benchmark/scenarios.js
++++ /dev/null
+@@ -1,36 +0,0 @@
+-"use strict";
+-
+-var Q = require("../q");
+-
+-suite("Chaining", function () {
+-    var numberToChain = 1000;
+-
+-    bench("Chaining many already-fulfilled promises together", function (done) {
+-        var currentPromise = Q();
+-        for (var i = 0; i < numberToChain; ++i) {
+-            currentPromise = currentPromise.then(function () {
+-                return Q();
+-            });
+-        }
+-
+-        currentPromise.then(done);
+-    });
+-
+-    bench("Chaining and then fulfilling the end of the chain", function (done) {
+-        var deferred = Q.defer();
+-
+-        var currentPromise = deferred.promise;
+-        for (var i = 0; i < numberToChain; ++i) {
+-            (function () {
+-                var promiseToReturn = currentPromise;
+-                currentPromise = Q().then(function () {
+-                    return promiseToReturn;
+-                });
+-            }());
+-        }
+-
+-        currentPromise.then(done);
+-
+-        deferred.resolve();
+-    });
+-});
+diff --git a/node_modules/q/package.json b/node_modules/q/package.json
+index ac910b5..76e05aa 100644
+--- a/node_modules/q/package.json
++++ b/node_modules/q/package.json
+@@ -1,38 +1,38 @@
+ {
+   "_args": [
+     [
+-      "q@~1.0.1",
+-      "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/bower"
++      "q",
++      "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics"
+     ]
+   ],
+-  "_from": "q@>=1.0.1 <1.1.0",
+-  "_id": "q@1.0.1",
++  "_from": "q@latest",
++  "_id": "q@1.4.1",
+   "_inCache": true,
+   "_installable": true,
+   "_location": "/q",
++  "_nodeVersion": "1.8.1",
+   "_npmUser": {
+     "email": "kris.kowal@cixar.com",
+     "name": "kriskowal"
+   },
+-  "_npmVersion": "1.4.4",
++  "_npmVersion": "2.8.3",
+   "_phantomChildren": {},
+   "_requested": {
+     "name": "q",
+-    "raw": "q@~1.0.1",
+-    "rawSpec": "~1.0.1",
++    "raw": "q",
++    "rawSpec": "",
+     "scope": null,
+-    "spec": ">=1.0.1 <1.1.0",
+-    "type": "range"
++    "spec": "latest",
++    "type": "tag"
+   },
+   "_requiredBy": [
+-    "/bower",
+-    "/decompress-zip"
++    "#USER"
+   ],
+-  "_resolved": "https://registry.npmjs.org/q/-/q-1.0.1.tgz",
+-  "_shasum": "11872aeedee89268110b10a718448ffb10112a14",
++  "_resolved": "https://registry.npmjs.org/q/-/q-1.4.1.tgz",
++  "_shasum": "55705bcd93c5f3673530c2c2cbc0c2b3addc286e",
+   "_shrinkwrap": null,
+-  "_spec": "q@~1.0.1",
+-  "_where": "/Users/chibimahi/Documents/adminbox/Main sources/angularadmin/node_modules/bower",
++  "_spec": "q",
++  "_where": "/Users/chibimahi/Documents/FinalProject/gitversion/Advertisement_Analytics",
+   "author": {
+     "email": "kris@cixar.com",
+     "name": "Kris Kowal",
+@@ -64,7 +64,7 @@
+     "cover": "*",
+     "grunt": "~0.4.1",
+     "grunt-cli": "~0.1.9",
+-    "grunt-contrib-uglify": "~0.2.2",
++    "grunt-contrib-uglify": "~0.9.1",
+     "jasmine-node": "1.11.0",
+     "jshint": "~2.1.9",
+     "matcha": "~0.2.0",
+@@ -75,13 +75,19 @@
+     "test": "./spec"
+   },
+   "dist": {
+-    "shasum": "11872aeedee89268110b10a718448ffb10112a14",
+-    "tarball": "https://registry.npmjs.org/q/-/q-1.0.1.tgz"
++    "shasum": "55705bcd93c5f3673530c2c2cbc0c2b3addc286e",
++    "tarball": "https://registry.npmjs.org/q/-/q-1.4.1.tgz"
+   },
+   "engines": {
+     "node": ">=0.6.0",
+     "teleport": ">=0.2.0"
+   },
++  "files": [
++    "LICENSE",
++    "q.js",
++    "queue.js"
++  ],
++  "gitHead": "d373079d3620152e3d60e82f27265a09ee0e81bd",
+   "homepage": "https://github.com/kriskowal/q",
+   "keywords": [
+     "async",
+@@ -128,12 +134,12 @@
+   },
+   "scripts": {
+     "benchmark": "matcha",
+-    "cover": "cover run node_modules/jasmine-node/bin/jasmine-node spec && cover report html && opener cover_html/index.html",
++    "cover": "cover run jasmine-node spec && cover report html && opener cover_html/index.html",
+     "lint": "jshint q.js",
+     "minify": "grunt",
+     "prepublish": "grunt",
+     "test": "jasmine-node spec && promises-aplus-tests spec/aplus-adapter",
+     "test-browser": "opener spec/q-spec.html"
+   },
+-  "version": "1.0.1"
++  "version": "1.4.1"
+ }
+diff --git a/node_modules/q/q.js b/node_modules/q/q.js
+index df36027..cf5339e 100644
+--- a/node_modules/q/q.js
++++ b/node_modules/q/q.js
+@@ -27,8 +27,7 @@
+  */
+ 
+ (function (definition) {
+-    // Turn off strict mode for this function so we can assign to global.Q
+-    /* jshint strict: false */
++    "use strict";
+ 
+     // This file will function properly as a <script> tag, or a module
+     // using CommonJS and NodeJS or RequireJS module formats.  In
+@@ -40,7 +39,7 @@
+         bootstrap("promise", definition);
+ 
+     // CommonJS
+-    } else if (typeof exports === "object") {
++    } else if (typeof exports === "object" && typeof module === "object") {
+         module.exports = definition();
+ 
+     // RequireJS
+@@ -56,8 +55,25 @@
+         }
+ 
+     // <script>
++    } else if (typeof window !== "undefined" || typeof self !== "undefined") {
++        // Prefer window over self for add-on scripts. Use self for
++        // non-windowed contexts.
++        var global = typeof window !== "undefined" ? window : self;
++
++        // Get the `window` object, save the previous Q global
++        // and initialize Q as a global.
++        var previousQ = global.Q;
++        global.Q = definition();
++
++        // Add a noConflict function so Q can be removed from the
++        // global namespace.
++        global.Q.noConflict = function () {
++            global.Q = previousQ;
++            return this;
++        };
++
+     } else {
+-        Q = definition();
++        throw new Error("This environment was not anticipated by Q. Please file a bug.");
+     }
+ 
+ })(function () {
+@@ -89,57 +105,67 @@ var nextTick =(function () {
+     var flushing = false;
+     var requestTick = void 0;
+     var isNodeJS = false;
++    // queue for late tasks, used by unhandled rejection tracking
++    var laterQueue = [];
+ 
+     function flush() {
+         /* jshint loopfunc: true */
++        var task, domain;
+ 
+         while (head.next) {
+             head = head.next;
+-            var task = head.task;
++            task = head.task;
+             head.task = void 0;
+-            var domain = head.domain;
++            domain = head.domain;
+ 
+             if (domain) {
+                 head.domain = void 0;
+                 domain.enter();
+             }
++            runSingle(task, domain);
+ 
+-            try {
+-                task();
+-
+-            } catch (e) {
+-                if (isNodeJS) {
+-                    // In node, uncaught exceptions are considered fatal errors.
+-                    // Re-throw them synchronously to interrupt flushing!
+-
+-                    // Ensure continuation if the uncaught exception is suppressed
+-                    // listening "uncaughtException" events (as domains does).
+-                    // Continue in next event to avoid tick recursion.
+-                    if (domain) {
+-                        domain.exit();
+-                    }
+-                    setTimeout(flush, 0);
+-                    if (domain) {
+-                        domain.enter();
+-                    }
+-
+-                    throw e;
++        }
++        while (laterQueue.length) {
++            task = laterQueue.pop();
++            runSingle(task);
++        }
++        flushing = false;
++    }
++    // runs a single function in the async queue
++    function runSingle(task, domain) {
++        try {
++            task();
+ 
+-                } else {
+-                    // In browsers, uncaught exceptions are not fatal.
+-                    // Re-throw them asynchronously to avoid slow-downs.
+-                    setTimeout(function() {
+-                       throw e;
+-                    }, 0);
++        } catch (e) {
++            if (isNodeJS) {
++                // In node, uncaught exceptions are considered fatal errors.
++                // Re-throw them synchronously to interrupt flushing!
++
++                // Ensure continuation if the uncaught exception is suppressed
++                // listening "uncaughtException" events (as domains does).
++                // Continue in next event to avoid tick recursion.
++                if (domain) {
++                    domain.exit();
++                }
++                setTimeout(flush, 0);
++                if (domain) {
++                    domain.enter();
+                 }
+-            }
+ 
+-            if (domain) {
+-                domain.exit();
++                throw e;
++
++            } else {
++                // In browsers, uncaught exceptions are not fatal.
++                // Re-throw them asynchronously to avoid slow-downs.
++                setTimeout(function () {
++                    throw e;
++                }, 0);
+             }
+         }
+ 
+-        flushing = false;
++        if (domain) {
++            domain.exit();
++        }
+     }
+ 
+     nextTick = function (task) {
+@@ -155,9 +181,16 @@ var nextTick =(function () {
+         }
+     };
+ 
+-    if (typeof process !== "undefined" && process.nextTick) {
+-        // Node.js before 0.9. Note that some fake-Node environments, like the
+-        // Mocha test runner, introduce a `process` global without a `nextTick`.
++    if (typeof process === "object" &&
++        process.toString() === "[object process]" && process.nextTick) {
++        // Ensure Q is in a real Node environment, with a `process.nextTick`.
++        // To see through fake Node environments:
++        // * Mocha test runner - exposes a `process` global without a `nextTick`
++        // * Browserify - exposes a `process.nexTick` function that uses
++        //   `setTimeout`. In this case `setImmediate` is preferred because
++        //    it is faster. Browserify's `process.toString()` yields
++        //   "[object Object]", while in a real Node environment
++        //   `process.nextTick()` yields "[object process]".
+         isNodeJS = true;
+ 
+         requestTick = function () {
+@@ -201,7 +234,16 @@ var nextTick =(function () {
+             setTimeout(flush, 0);
+         };
+     }
+-
++    // runs a task after all other tasks have been run
++    // this is useful for unhandled rejection tracking that needs to happen
++    // after all `then`d tasks have been run.
++    nextTick.runAfter = function (task) {
++        laterQueue.push(task);
++        if (!flushing) {
++            flushing = true;
++            requestTick();
++        }
++    };
+     return nextTick;
+ })();
+ 
+@@ -450,7 +492,7 @@ function Q(value) {
+     // If the object is already a Promise, return it directly.  This enables
+     // the resolve function to both be used to created references from objects,
+     // but to tolerably coerce non-promises to promises.
+-    if (isPromise(value)) {
++    if (value instanceof Promise) {
+         return value;
+     }
+ 
+@@ -474,6 +516,11 @@ Q.nextTick = nextTick;
+  */
+ Q.longStackSupport = false;
+ 
++// enable long stacks if Q_DEBUG is set
++if (typeof process === "object" && process && process.env && process.env.Q_DEBUG) {
++    Q.longStackSupport = true;
++}
++
+ /**
+  * Constructs a {promise, resolve, reject} object.
+  *
+@@ -505,7 +552,7 @@ function defer() {
+                 progressListeners.push(operands[1]);
+             }
+         } else {
+-            nextTick(function () {
++            Q.nextTick(function () {
+                 resolvedPromise.promiseDispatch.apply(resolvedPromise, args);
+             });
+         }
+@@ -553,7 +600,7 @@ function defer() {
+         promise.source = newPromise;
+ 
+         array_reduce(messages, function (undefined, message) {
+-            nextTick(function () {
++            Q.nextTick(function () {
+                 newPromise.promiseDispatch.apply(newPromise, message);
+             });
+         }, void 0);
+@@ -591,7 +638,7 @@ function defer() {
+         }
+ 
+         array_reduce(progressListeners, function (undefined, progressListener) {
+-            nextTick(function () {
++            Q.nextTick(function () {
+                 progressListener(progress);
+             });
+         }, void 0);
+@@ -684,15 +731,15 @@ Promise.prototype.join = function (that) {
+ };
+ 
+ /**
+- * Returns a promise for the first of an array of promises to become fulfilled.
++ * Returns a promise for the first of an array of promises to become settled.
+  * @param answers {Array[Any*]} promises to race
+- * @returns {Any*} the first promise to be fulfilled
++ * @returns {Any*} the first promise to be settled
+  */
+ Q.race = race;
+ function race(answerPs) {
+-    return promise(function(resolve, reject) {
++    return promise(function (resolve, reject) {
+         // Switch to this once we can assume at least ES5
+-        // answerPs.forEach(function(answerP) {
++        // answerPs.forEach(function (answerP) {
+         //     Q(answerP).then(resolve, reject);
+         // });
+         // Use this in the meantime
+@@ -806,7 +853,7 @@ Promise.prototype.then = function (fulfilled, rejected, progressed) {
+         return typeof progressed === "function" ? progressed(value) : value;
+     }
+ 
+-    nextTick(function () {
++    Q.nextTick(function () {
+         self.promiseDispatch(function (value) {
+             if (done) {
+                 return;
+@@ -847,6 +894,30 @@ Promise.prototype.then = function (fulfilled, rejected, progressed) {
+     return deferred.promise;
+ };
+ 
++Q.tap = function (promise, callback) {
++    return Q(promise).tap(callback);
++};
++
++/**
++ * Works almost like "finally", but not called for rejections.
++ * Original resolution value is passed through callback unaffected.
++ * Callback may return a promise that will be awaited for.
++ * @param {Function} callback
++ * @returns {Q.Promise}
++ * @example
++ * doSomething()
++ *   .then(...)
++ *   .tap(console.log)
++ *   .then(...);
++ */
++Promise.prototype.tap = function (callback) {
++    callback = Q(callback);
++
++    return this.then(function (value) {
++        return callback.fcall(value).thenResolve(value);
++    });
++};
++
+ /**
+  * Registers an observer on a promise.
+  *
+@@ -912,9 +983,7 @@ function nearer(value) {
+  */
+ Q.isPromise = isPromise;
+ function isPromise(object) {
+-    return isObject(object) &&
+-        typeof object.promiseDispatch === "function" &&
+-        typeof object.inspect === "function";
++    return object instanceof Promise;
+ }
+ 
+ Q.isPromiseAlike = isPromiseAlike;
+@@ -968,6 +1037,7 @@ Promise.prototype.isRejected = function () {
+ // shimmed environments, this would naturally be a `Set`.
+ var unhandledReasons = [];
+ var unhandledRejections = [];
++var reportedUnhandledRejections = [];
+ var trackUnhandledRejections = true;
+ 
+ function resetUnhandledRejections() {
+@@ -983,6 +1053,14 @@ function trackRejection(promise, reason) {
+     if (!trackUnhandledRejections) {
+         return;
+     }
++    if (typeof process === "object" && typeof process.emit === "function") {
++        Q.nextTick.runAfter(function () {
++            if (array_indexOf(unhandledRejections, promise) !== -1) {
++                process.emit("unhandledRejection", reason, promise);
++                reportedUnhandledRejections.push(promise);
++            }
++        });
++    }
+ 
+     unhandledRejections.push(promise);
+     if (reason && typeof reason.stack !== "undefined") {
+@@ -999,6 +1077,15 @@ function untrackRejection(promise) {
+ 
+     var at = array_indexOf(unhandledRejections, promise);
+     if (at !== -1) {
++        if (typeof process === "object" && typeof process.emit === "function") {
++            Q.nextTick.runAfter(function () {
++                var atReport = array_indexOf(reportedUnhandledRejections, promise);
++                if (atReport !== -1) {
++                    process.emit("rejectionHandled", unhandledReasons[at], promise);
++                    reportedUnhandledRejections.splice(atReport, 1);
++                }
++            });
++        }
+         unhandledRejections.splice(at, 1);
+         unhandledReasons.splice(at, 1);
+     }
+@@ -1092,7 +1179,7 @@ function fulfill(value) {
+  */
+ function coerce(promise) {
+     var deferred = defer();
+-    nextTick(function () {
++    Q.nextTick(function () {
+         try {
+             promise.then(deferred.resolve, deferred.reject, deferred.notify);
+         } catch (exception) {
+@@ -1193,7 +1280,7 @@ function async(makeGenerator) {
+                     return reject(exception);
+                 }
+                 if (result.done) {
+-                    return result.value;
++                    return Q(result.value);
+                 } else {
+                     return when(result.value, callback, errback);
+                 }
+@@ -1204,7 +1291,7 @@ function async(makeGenerator) {
+                     result = generator[verb](arg);
+                 } catch (exception) {
+                     if (isStopIteration(exception)) {
+-                        return exception.value;
++                        return Q(exception.value);
+                     } else {
+                         return reject(exception);
+                     }
+@@ -1300,7 +1387,7 @@ function dispatch(object, op, args) {
+ Promise.prototype.dispatch = function (op, args) {
+     var self = this;
+     var deferred = defer();
+-    nextTick(function () {
++    Q.nextTick(function () {
+         self.promiseDispatch(deferred.resolve, op, args);
+     });
+     return deferred.promise;
+@@ -1473,7 +1560,7 @@ Promise.prototype.keys = function () {
+ Q.all = all;
+ function all(promises) {
+     return when(promises, function (promises) {
+-        var countDown = 0;
++        var pendingCount = 0;
+         var deferred = defer();
+         array_reduce(promises, function (undefined, promise, index) {
+             var snapshot;
+@@ -1483,12 +1570,12 @@ function all(promises) {
+             ) {
+                 promises[index] = snapshot.value;
+             } else {
+-                ++countDown;
++                ++pendingCount;
+                 when(
+                     promise,
+                     function (value) {
+                         promises[index] = value;
+-                        if (--countDown === 0) {
++                        if (--pendingCount === 0) {
+                             deferred.resolve(promises);
+                         }
+                     },
+@@ -1499,7 +1586,7 @@ function all(promises) {
+                 );
+             }
+         }, void 0);
+-        if (countDown === 0) {
++        if (pendingCount === 0) {
+             deferred.resolve(promises);
+         }
+         return deferred.promise;
+@@ -1511,6 +1598,55 @@ Promise.prototype.all = function () {
+ };
+ 
+ /**
++ * Returns the first resolved promise of an array. Prior rejected promises are
++ * ignored.  Rejects only if all promises are rejected.
++ * @param {Array*} an array containing values or promises for values
++ * @returns a promise fulfilled with the value of the first resolved promise,
++ * or a rejected promise if all promises are rejected.
++ */
++Q.any = any;
++
++function any(promises) {
++    if (promises.length === 0) {
++        return Q.resolve();
++    }
++
++    var deferred = Q.defer();
++    var pendingCount = 0;
++    array_reduce(promises, function (prev, current, index) {
++        var promise = promises[index];
++
++        pendingCount++;
++
++        when(promise, onFulfilled, onRejected, onProgress);
++        function onFulfilled(result) {
++            deferred.resolve(result);
++        }
++        function onRejected() {
++            pendingCount--;
++            if (pendingCount === 0) {
++                deferred.reject(new Error(
++                    "Can't get fulfillment value from any promise, all " +
++                    "promises were rejected."
++                ));
++            }
++        }
++        function onProgress(progress) {
++            deferred.notify({
++                index: index,
++                value: progress
++            });
++        }
++    }, undefined);
++
++    return deferred.promise;
++}
++
++Promise.prototype.any = function () {
++    return any(this);
++};
++
++/**
+  * Waits for all promises to be settled, either fulfilled or
+  * rejected.  This is distinct from `all` since that would stop
+  * waiting at the first rejection.  The promise returned by
+@@ -1643,7 +1779,7 @@ Promise.prototype.done = function (fulfilled, rejected, progress) {
+     var onUnhandledError = function (error) {
+         // forward to a future turn so that ``when``
+         // does not catch it and turn it into a rejection.
+-        nextTick(function () {
++        Q.nextTick(function () {
+             makeStackTraceLong(error, promise);
+             if (Q.onerror) {
+                 Q.onerror(error);
+@@ -1670,18 +1806,22 @@ Promise.prototype.done = function (fulfilled, rejected, progress) {
+  * some milliseconds time out.
+  * @param {Any*} promise
+  * @param {Number} milliseconds timeout
+- * @param {String} custom error message (optional)
++ * @param {Any*} custom error message or Error object (optional)
+  * @returns a promise for the resolution of the given promise if it is
+  * fulfilled before the timeout, otherwise rejected.
+  */
+-Q.timeout = function (object, ms, message) {
+-    return Q(object).timeout(ms, message);
++Q.timeout = function (object, ms, error) {
++    return Q(object).timeout(ms, error);
+ };
+ 
+-Promise.prototype.timeout = function (ms, message) {
++Promise.prototype.timeout = function (ms, error) {
+     var deferred = defer();
+     var timeoutId = setTimeout(function () {
+-        deferred.reject(new Error(message || "Timed out after " + ms + " ms"));
++        if (!error || "string" === typeof error) {
++            error = new Error(error || "Timed out after " + ms + " ms");
++            error.code = "ETIMEDOUT";
++        }
++        deferred.reject(error);
+     }, ms);
+ 
+     this.then(function (value) {
+@@ -1883,11 +2023,11 @@ function nodeify(object, nodeback) {
+ Promise.prototype.nodeify = function (nodeback) {
+     if (nodeback) {
+         this.then(function (value) {
+-            nextTick(function () {
++            Q.nextTick(function () {
+                 nodeback(null, value);
+             });
+         }, function (error) {
+-            nextTick(function () {
++            Q.nextTick(function () {
+                 nodeback(error);
+             });
+         });
+@@ -1896,6 +2036,10 @@ Promise.prototype.nodeify = function (nodeback) {
+     }
+ };
+ 
++Q.noConflict = function() {
++    throw new Error("Q.noConflict only works when Q is used as a global");
++};
++
+ // All code before this point will be filtered from stack traces.
+ var qEndingLine = captureLine();
+ 
+diff --git a/package.json b/package.json
+index 5ac6ce0..9716857 100644
+--- a/package.json
++++ b/package.json
+@@ -21,6 +21,7 @@
+     "karma-jasmine": "~0.1.0"
+   },
+   "dependencies": {
+-    "mysql": "^2.10.2"
++    "mysql": "^2.10.2",
++    "promise": "^7.1.1"
+   }
+ }
+diff --git a/serverexpress.js b/serverexpress.js
+index e85e2d6..9a0cf8e 100755
+--- a/serverexpress.js
++++ b/serverexpress.js
+@@ -6,7 +6,7 @@
+   var mysql= require('mysql');
+ 
+   var dbQueries=require('./dbqueries/dbqueries.json');
+-
++  var Q = require('q');
+ 
+   var con = mysql.createConnection({
+     host: "localhost",
+@@ -33,6 +33,13 @@
+   app.use(bodyParser.json());
+   app.use(bodyParser.urlencoded({extended:true}));
+ 
++  app.all(function(req,res){
++
++    res.header("Access-Control-Allow-Origin", "*");
++    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
++  });
++
++
+   app.use(function (req, res, next) {
+ 
+       // Website you wish to allow to connect
+@@ -89,9 +96,6 @@
+     });
+ 
+ 
+-    
+-
+-    
+   })
+ 
+   app.get('/getPopularAds', function(req,res){
+@@ -123,7 +127,7 @@
+       res.status(200).json(popularAds);
+ 
+    });
+-    
++
+   })
+ 
+   app.get('/getSearchAdCount', function(req,res){
+@@ -132,7 +136,7 @@
+ 
+     var responseData = [];
+ 
+-    
++
+ 
+     con.query(dbQueries.popularAdCount, function(err,queryResp){
+ 
+@@ -149,7 +153,7 @@
+         adWithCount.count=queryResp[i].Count;
+         adWithCount.searchKeyText=queryResp[i].Search_Key_Text;
+         responseData.push(adWithCount);
+-        
++
+       }
+ 
+       res.status(200).json(responseData);
+@@ -172,14 +176,12 @@
+     console.log("After 5 seconds");
+     res.status(200).send("Thanks");
+   },5000);
+-  
++
+ 
+   });
+ 
+   app.get('/getMonthData',function(req,res){
+ 
+-
+-
+   var data1 = [
+                   [1, 65],
+                   [2, 20],
+@@ -207,7 +209,7 @@
+                   [11, 29]
+               ]
+ 
+-  
++
+ 
+   con.query(dbQueries.trendingAds.pastMonth, function(err,pastMonthResp){
+ 
+@@ -246,5 +248,97 @@
+ 
+   })
+ 
++
++  function InsertSearchInfo(Linking_Site_URL,Search_Location,Device_Type){
++
++    var actualValueString = '(CURRENT_TIMESTAMP(),'+Linking_Site_URL+','+Search_Location+','+Device_Type+');'
++
++    var queryStr= dbQueries.SearchInfo+actualValueString;
++
++    console.log("Query String"+queryStr);
++
++    con.query(queryStr, function(err,response){
++
++      if(err){
++       console.log("error inserting");
++     } else{
++       console.log(response);
++     }
++    })
++  }
++
++  function InserSearchKeywords(){
++
++
++  }
++
++  function getSearchKeyID(){
++
++
++  }
++
++  function getSearchID(){
++
++
++  }
++
++  function InsertSearchKeywordCombo(){
++
++  }
++
++  function InsertAdsInformation(){
++
++
++  }
++
++  function InsertAd_Keywords(){
++
++
++  }
++
++  function getAdKeyID(){
++
++  }
++
++  function getAd_ID(){
++
++  }
++
++  function Insert_AD_Impressions(){
++
++  }
++
++
++  app.post('/getAdInfo',function(req,res){
++
++
++  /*adinfo { Ad_Title: 'Super Creative',
++  Ad_Description: 'asd',
++  Ad_Display_Position: '3',
++  Ad_Type: 'Type 2',
++  Search_Key_Text: 'Rusholme',
++  Search_Location: 'Chicago',
++  Linking_Site_URL: 'http://www.mashable.com',
++  Parent_Site_URL: 'http://www.ray-ban.com',
++  Device_Type: 'Position 1',
++  Ad_url: 'http://www.adinfo.com',
++  Click_Prediction: 1 } */
++
++
++  console.log("adinfo",req.body);
++  var adInfo=req.body;
++  /*Database insert functions*/
++//  InsertSearchInfo(adInfo.Linking_Site_URL,adInfo.Search_Location,adInfo.Device_Type);
++
++  con.query(dbQueries.HistoricalAds, function(err,responseHistory){
++
++    console.log(responseHistory);
++
++    res.status(200).send(responseHistory);
++
++  })
++
++  });
++
+   app.listen(port);
+   console.log('5353 is the port');

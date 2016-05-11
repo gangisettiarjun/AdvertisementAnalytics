@@ -6,7 +6,7 @@
   var mysql= require('mysql');
 
   var dbQueries=require('./dbqueries/dbqueries.json');
-
+  var Q = require('q');
 
   var con = mysql.createConnection({
     host: "localhost",
@@ -32,6 +32,13 @@
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended:true}));
+
+  app.all(function(req,res){
+
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  });
+
 
   app.use(function (req, res, next) {
 
@@ -89,9 +96,6 @@
     });
 
 
-    
-
-    
   })
 
   app.get('/getPopularAds', function(req,res){
@@ -123,7 +127,7 @@
       res.status(200).json(popularAds);
 
    });
-    
+
   })
 
   app.get('/getSearchAdCount', function(req,res){
@@ -132,7 +136,7 @@
 
     var responseData = [];
 
-    
+
 
     con.query(dbQueries.popularAdCount, function(err,queryResp){
 
@@ -149,7 +153,7 @@
         adWithCount.count=queryResp[i].Count;
         adWithCount.searchKeyText=queryResp[i].Search_Key_Text;
         responseData.push(adWithCount);
-        
+
       }
 
       res.status(200).json(responseData);
@@ -172,13 +176,11 @@
     console.log("After 5 seconds");
     res.status(200).send("Thanks");
   },5000);
-  
+
 
   });
 
   app.get('/getMonthData',function(req,res){
-
-
 
   var data1 = [
                   [1, 65],
@@ -207,7 +209,7 @@
                   [11, 29]
               ]
 
-  
+
 
   con.query(dbQueries.trendingAds.pastMonth, function(err,pastMonthResp){
 
@@ -245,6 +247,98 @@
   res.send(200,"Go ahead");
 
   })
+
+
+  function InsertSearchInfo(Linking_Site_URL,Search_Location,Device_Type){
+
+    var actualValueString = '(CURRENT_TIMESTAMP(),'+Linking_Site_URL+','+Search_Location+','+Device_Type+');'
+
+    var queryStr= dbQueries.SearchInfo+actualValueString;
+
+    console.log("Query String"+queryStr);
+
+    con.query(queryStr, function(err,response){
+
+      if(err){
+       console.log("error inserting");
+     } else{
+       console.log(response);
+     }
+    })
+  }
+
+  function InserSearchKeywords(){
+
+
+  }
+
+  function getSearchKeyID(){
+
+
+  }
+
+  function getSearchID(){
+
+
+  }
+
+  function InsertSearchKeywordCombo(){
+
+  }
+
+  function InsertAdsInformation(){
+
+
+  }
+
+  function InsertAd_Keywords(){
+
+
+  }
+
+  function getAdKeyID(){
+
+  }
+
+  function getAd_ID(){
+
+  }
+
+  function Insert_AD_Impressions(){
+
+  }
+
+
+  app.post('/getAdInfo',function(req,res){
+
+
+  /*adinfo { Ad_Title: 'Super Creative',
+  Ad_Description: 'asd',
+  Ad_Display_Position: '3',
+  Ad_Type: 'Type 2',
+  Search_Key_Text: 'Rusholme',
+  Search_Location: 'Chicago',
+  Linking_Site_URL: 'http://www.mashable.com',
+  Parent_Site_URL: 'http://www.ray-ban.com',
+  Device_Type: 'Position 1',
+  Ad_url: 'http://www.adinfo.com',
+  Click_Prediction: 1 } */
+
+
+  console.log("adinfo",req.body);
+  var adInfo=req.body;
+  /*Database insert functions*/
+//  InsertSearchInfo(adInfo.Linking_Site_URL,adInfo.Search_Location,adInfo.Device_Type);
+
+  con.query(dbQueries.HistoricalAds, function(err,responseHistory){
+
+    console.log(responseHistory);
+
+    res.status(200).send(responseHistory);
+
+  })
+
+  });
 
   app.listen(port);
   console.log('5353 is the port');

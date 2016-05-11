@@ -1,4 +1,4 @@
-{	
+{
 	"adVsClicks" : "SELECT Count(Ad_Id) as Ad_Impressions, SUM(Is_Clicked) as Ads_Clicked, YEAR(Search_Time) as Search_Year FROM Ad_Impressions INNER JOIN Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id group by Search_Year having Search_Year > '2003' order by Search_Year;",
 
 	"popularads" : "SELECT Ad_Key_Text FROM Ad_Keywords_Combo INNER JOIN Ad_Keywords WHERE Ad_Keywords_Combo.Ad_Key_Id = Ad_Keywords.Ad_Key_Id GROUP BY Ad_Key_Text ORDER BY Ad_Id DESC LIMIT 8;",
@@ -8,5 +8,29 @@
 	"trendingAds"  : {
 		"currentMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 8 AND YEAR(Search_Time) = 2009 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;",
 		"pastMonth" : "SELECT Ad_Title, SUM(Is_Clicked) No_of_Clicks FROM Ad_Impressions INNER JOIN Ads_Information, Search_Information, Search_Keywords, Search_Keywords_Combo WHERE Ads_Information.Ad_Id = Ad_Impressions.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id AND Ad_Impressions.Search_Id = Search_Keywords_Combo.Search_Id AND Search_Keywords_Combo.Search_Key_Id = Search_Keywords.Search_Key_Id AND MONTH(Search_Time) = 11 AND YEAR(Search_Time) = 2010 GROUP BY Ads_Information.Ad_Id ORDER BY No_of_Clicks DESC LIMIT 11;"
-	}
+	},
+
+	"SearchInfo" : "INSERT INTO Search_Information (Search_Time, Linking_Site_URL, Search_Location, Device_Type) VALUES ",
+
+	"Search_Keywords" : "INSERT INTO Search_Keywords (Search_Key_Text) VALUES",
+
+	"Search_Key_Id": "SELECT Search_Key_Id FROM Search_Keywords ORDER BY Search_Key_Id DESC LIMIT 1;",
+
+	"Search_Id": "SELECT Search_Id FROM Search_Information ORDER BY Search_Id DESC LIMIT 1;",
+
+	"Search_Keywords_Combo": "INSERT INTO Search_Keywords_Combo (Search_Key_Id, Search_Id) VALUES",
+
+	"Ads_Information" : "INSERT INTO Ads_Information (Ad_Title, Ad_Description, Ad_URL, Ad_Type) VALUES",
+
+	"Ad_Keywords" : "INSERT INTO Ad_Keywords (Ad_Key_Text) VALUES",
+
+	"Ad_Key_Id": "SELECT Ad_Key_Id FROM Ad_Keywords ORDER BY Ad_Key_Id DESC LIMIT 1;",
+
+	"Ad_Id": "SELECT Ad_Id FROM Ads_Information ORDER BY Ad_Id DESC LIMIT 1;",
+
+	"Ad_Keywords_Combo": "INSERT INTO Ad_Keywords_Combo (Ad_Key_Id, Ad_Id) VALUES",
+
+	"Ad_Impressions": "INSERT INTO Ad_Impressions (Ad_Display_Position,Is_Clicked,Parent_Site_URL,Search_Id,Ad_Id) VALUES",
+
+	"HistoricalAds": "SELECT Ad_Title, Ad_Display_Position, Ad_Type, Search_Location, Linking_Site_URL, Parent_Site_URL, Device_Type, Is_Clicked FROM Ad_Impressions, Ads_Information, Search_Information WHERE Ad_Impressions.Ad_Id = Ads_Information.Ad_Id AND Ad_Impressions.Search_Id = Search_Information.Search_Id ORDER BY Ad_Impressions.Ad_Display_Position LIMIT 15;"
 }
