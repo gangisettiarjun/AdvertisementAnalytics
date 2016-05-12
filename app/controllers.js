@@ -856,11 +856,8 @@ angular.module("app.task", []).factory("taskStorage", function() {
     var DEMO_TASKS, STORAGE_ID;
     return STORAGE_ID = "tasks",
         DEMO_TASKS = '[ ' +
-            '{"title": "Call customer X", "completed": true}, ' +
+            '{"title": "Get New Ads", "completed": true}, ' +
             '{"title": "Review marketing system", "completed": true}, ' +
-            '{"title": "Do the twist!", "completed": false}, ' +
-            '{"title": "Watch over the mars scheme", "completed": false}, ' +
-            '{"title": "Complete proposal for spaceship", "completed": false}, ' +
             '{"title": "Do inventory of everything", "completed": false} ]', {
         get: function() {
             return JSON.parse(localStorage.getItem(STORAGE_ID) || DEMO_TASKS);

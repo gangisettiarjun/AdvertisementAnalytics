@@ -12,7 +12,7 @@
     host: "localhost",
     user: "root",
     password: "root",
-    database: "adnalytics_master"
+    database: "ad_analytics_master"
   });
 
   con.connect(function(err){
